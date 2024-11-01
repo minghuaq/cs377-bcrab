@@ -1,5 +1,5 @@
 # API Configuration
-Api configuration is handled in `/src/app/api/.env`.
+Api configuration is handled in `/.env.local`.
 
 ## Keys
 
@@ -12,3 +12,8 @@ Key: `RATE_LIMIT`
 The url of the remote llm api.
 
 Key: `API_PATH`
+
+### API Key
+The authentication key for the API. Authorizes using the `Authorization : "Bearer "` header.
+
+Key: `API_KEY`

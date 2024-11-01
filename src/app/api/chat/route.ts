@@ -1,6 +1,4 @@
-import { NextResponse, NextRequest } from 'next/server'
-
-// export const dynamic = "force-dynamic"; // defaults to auto
+import { NextRequest } from 'next/server'
 
 export async function POST(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams
@@ -34,7 +32,6 @@ export async function POST(request: NextRequest) {
         }),
     });
     const product = await res.json();
-    // const product = { "key": process.env.API_KEY }
 
     return Response.json({ product });
 }

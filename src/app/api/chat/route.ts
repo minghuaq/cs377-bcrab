@@ -6,7 +6,7 @@ export async function POST(request: NextRequest) {
     const userMessage = searchParams.get('user')
     // TODO: Message Sanitization.
 
-    const res = await fetch(`${process.env.API_PATH}`, {
+    const res = await fetch(`${process.env.API_PATH || "https://openrouter.ai/api/v1/chat/completions"}`, {
         method: "POST",
         headers: {
             Authorization: `Bearer ${process.env.API_KEY}`,
@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
             "Content-Type": "application/json",
         },
         body: JSON.stringify({
-            model: "meta-llama/llama-3.1-8b-instruct:free",
+            model: `${process.env.MODEL || "meta-llama/llama-3.1-405b-instruct:free"}`,
             messages: [
                 {
                     role: "system",

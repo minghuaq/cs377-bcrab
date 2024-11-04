@@ -9,7 +9,7 @@ The number of requests allowed per minute.
 Key: `RATE_LIMIT`
 
 ### API Path
-The url of the remote llm api.
+The url of the remote llm api. Only openrouter is supported, although anyone with an identical API should work.
 
 Key: `API_PATH`
 
@@ -17,3 +17,8 @@ Key: `API_PATH`
 The authentication key for the API. Authorizes using the `Authorization : "Bearer "` header.
 
 Key: `API_KEY`
+
+### Model
+Which model to use.
+
+Key: `MODEL`

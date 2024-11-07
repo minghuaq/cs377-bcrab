@@ -22,3 +22,8 @@ Key: `API_KEY`
 Which model to use.
 
 Key: `MODEL`
+
+### API Base URL
+Store your base url, http://localhost:3000/api for local and https://cs377-bcrab.vercel.app/api for production.
+
+Key: `NEXT_PUBLIC_API_BASE_URL`

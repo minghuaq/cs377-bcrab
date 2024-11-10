@@ -10,7 +10,7 @@ export async function sendRequest(
 ) {
     "use server";
 
-    let message = formData.get("chat")?.toString();
+    let message = formData.get("chat");
     try {
         let data = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/chat`, {
             method: "POST",
@@ -26,7 +26,10 @@ export async function sendRequest(
 
         let response = await data.json();
         if (response.product.error?.code == 429) {
-            return { message: "You’ve reached our limit of messages per minute. Please try again later"}
+            return {
+                message:
+                    "You’ve reached our limit of messages per minute. Please try again later",
+            };
         }
 
         return { message: response.product.choices[0].message.content };

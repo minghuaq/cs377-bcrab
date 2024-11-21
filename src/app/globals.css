@@ -68,7 +68,6 @@ body {
             --chart-5: 340 75% 55%;
         }
     }
-    
 }
 
 @layer base {
@@ -78,4 +77,8 @@ body {
     body {
         @apply bg-background text-foreground;
     }
+}
+
+p:empty:before {
+    content: attr(data-placeholder);
 }

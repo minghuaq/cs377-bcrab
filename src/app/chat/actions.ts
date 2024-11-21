@@ -1,16 +1,9 @@
 "use server";
 
-import { log } from "console";
-
-export async function sendRequest(
-    prevState: {
-        message: string;
-    },
-    formData: FormData
-) {
+export async function sendRequest(message: string) {
     "use server";
 
-    let message = formData.get("chat");
+    console.log(message);
     try {
         let data = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/chat`, {
             method: "POST",

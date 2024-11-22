@@ -1,27 +1,11 @@
-"use client";
-import Chatbox from "@/components/forms/chatbox";
-import { TypewriterEffectSmooth } from "@/components/ui/typewriter-effect";
-import { useState } from "react";
+import Navigation from '@/components/Navigation'
+import ChatInterface from '@/components/ChatInterface'
 
-const initialState = {
-    message: "",
-};
-export default function Home() {
-
-    const words = [
-        { text: "What" },
-        { text: "can" },
-        { text: "I" },
-        { text: "help" },
-        { text: "with?" },
-    ];
-    return (
-        <div className="flex flex-col w-full max-w-3xl content-center justify-center items-center justify-items-center h-full gap-4 font-[family-name:var(--font-geist-sans)]">
-            <TypewriterEffectSmooth
-                words={words}
-                cursorClassName={"bg-white"}
-            />
-            <Chatbox />
-        </div>
-    );
+export default function ChatPage() {
+  return (
+    <main className="min-h-screen bg-white dark:bg-black text-gray-900 dark:text-white transition-colors">
+      <Navigation />
+      <ChatInterface />
+    </main>
+  )
 }

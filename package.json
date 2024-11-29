@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "db-gen": "dotenv -e .env.local -- npx prisma migrate dev --name init"
   },
   "dependencies": {
     "@next/env": "^14.2.13",
@@ -19,6 +20,7 @@
     "@types/node": "^20.17.6",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "dotenv-cli": "^7.4.4",
     "eslint": "^8",
     "eslint-config-next": "14.2.13",
     "postcss": "^8",

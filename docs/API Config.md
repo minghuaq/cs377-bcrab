@@ -22,3 +22,10 @@ Key: `API_KEY`
 Which model to use.
 
 Key: `MODEL`
+
+### Databse url
+URL that the database can be found at.
+
+Follows the format postgresql://USER:PASSWORD@HOST:PORT/DATABASE?schema=SCHEMA
+
+Key: `DATABASE_URL`

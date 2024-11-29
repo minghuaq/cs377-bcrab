@@ -1,11 +1,14 @@
 "use client";
 import Chatbox from "@/components/forms/chatbox";
+import ChatDialog from "./chatdialog";
+import { useState } from "react";
 
-export default function Home() {
+export default function Home({ params }: { params: { id: string } }) {
+    const [conversation, setConversation] = useState<message[]>([]);
     return (
-        <div className="flex flex-col flex-wrap w-full h-full max-w-3xl justify-between pb-10">
-            <div></div>
-            <Chatbox />
+        <div className="flex flex-col gap-10 w-full h-full max-w-3xl justify-between pb-10">
+            <ChatDialog dialogID={params.id} conversation={conversation}/>
+            <Chatbox conversation={conversation} setConversation={setConversation}/>
         </div>
     );
 }

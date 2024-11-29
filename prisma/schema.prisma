@@ -12,3 +12,29 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model User {
+  id      String   @id
+  dialogs Dialog[]
+}
+
+model Dialog {
+  id       String    @default(uuid()) // dialogID
+  userId   String
+  user     User      @relation(fields: [userId], references: [id])
+  messages Message[]
+
+  @@id([userId, id]) // Composite primary key
+}
+
+model Message {
+  messageID Int     @default(autoincrement()) // messageID
+  dialogId  String
+  userId    String
+  dialog    Dialog  @relation(fields: [userId, dialogId], references: [userId, id])
+  message   String
+  isAI      Boolean
+  timestamp String
+
+  @@id([userId, dialogId, messageID]) // Composite primary key
+}

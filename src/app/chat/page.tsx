@@ -1,13 +1,8 @@
 "use client";
 import Chatbox from "@/components/forms/chatbox";
 import { TypewriterEffectSmooth } from "@/components/ui/typewriter-effect";
-import { useState } from "react";
 
-const initialState = {
-    message: "",
-};
 export default function Home() {
-
     const words = [
         { text: "What" },
         { text: "can" },

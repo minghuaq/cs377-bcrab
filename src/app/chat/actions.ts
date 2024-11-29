@@ -5,7 +5,7 @@ export async function sendRequest(message: string) {
 
     console.log(message);
     try {
-        let data = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/chat`, {
+        let data = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/chat`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

@@ -27,3 +27,13 @@ Key: `MODEL`
 Store your base url, http://localhost:3000/ for local and https://cs377-bcrab.vercel.app/ for production.
 
 Key: `NEXT_PUBLIC_BASE_URL`
+
+### Databse url
+
+URL that the database can be found at.
+
+THIS MUST BE PLACED IN `.env`, NOT `.env.local`
+
+Follows the format postgresql://USER:PASSWORD@HOST:PORT/DATABASE?schema=SCHEMA
+
+Key: `DATABASE_URL`

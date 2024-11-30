@@ -73,7 +73,7 @@ export const Sidebar = ({
 export const SidebarBody = (props: React.ComponentProps<typeof motion.div>) => {
     return (
         <>
-            <DesktopSidebar {...props} />
+            <DesktopSidebar data-testid="sidebar" {...props} />
             <MobileSidebar {...(props as React.ComponentProps<"div">)} />
         </>
     );
@@ -167,6 +167,7 @@ export const SidebarLink = ({
     const { open, animate } = useSidebar();
     return (
         <Link
+            data-testid="sidebar-link"
             href={link.href}
             className={cn(
                 "flex items-center justify-start gap-2  group/sidebar py-2",
@@ -177,6 +178,7 @@ export const SidebarLink = ({
             {link.icon}
 
             <motion.span
+                data-testid="sidebar-link-label"
                 animate={{
                     display: animate
                         ? open

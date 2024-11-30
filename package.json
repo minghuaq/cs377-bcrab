@@ -7,6 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "test": "npx playwright test --trace on",
+    "test:report": "npx playwright show-report",
+    "test:update": "npx playwright test --update-snapshots --trace on",
     "compose": "docker-compose up",
     "generate": "npx prisma db push"
   },
@@ -30,6 +33,7 @@
     "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
+    "@playwright/test": "^1.49.0",
     "@types/node": "^20.17.6",
     "@types/react": "^18",
     "@types/react-dom": "^18",

@@ -68,7 +68,7 @@ test('Send Message redirects', async ({ page, baseURL }) => {
         const json = {
             createMessage: {
                 dialogId: "00000000-0000-0000-0000-000000000000",
-                messageID: 14
+                messageID: 0
             }
         }
 

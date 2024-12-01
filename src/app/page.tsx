@@ -46,6 +46,5 @@ export default async function Home() {
                 { mainButton }
             </div>
         </div>
-        
     );
 }

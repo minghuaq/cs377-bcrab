@@ -11,20 +11,12 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
-import { useSession } from "next-auth/react"
-import { redirect } from "next/navigation";
 
 export default  function SidebarDemo({
     children,
 }: Readonly<{
     children: React.ReactNode;
 }>) {
-    const { data: session, status } = useSession()
-
-    if (status !== "authenticated") {
-        return redirect("/")
-    }
-
     const links = [
         {
             label: "Dashboard",

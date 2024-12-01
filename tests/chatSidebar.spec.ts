@@ -1,5 +1,7 @@
 import { test, expect } from '@playwright/test';
 
+test.describe.configure({ mode: 'parallel' });
+
 test('Chat has Sidebar', async ({ page }) => {
     await page.goto('/chat');
 

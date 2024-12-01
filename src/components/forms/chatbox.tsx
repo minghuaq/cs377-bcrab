@@ -53,9 +53,6 @@ export default function Chatbox(props: chatboxProps) {
     const parts = pathname.split("/");
     const lastPart = parts[parts.length - 1];
     const dialogID = lastPart == "chat" ? null : lastPart;
-
-    const [userMessage, setUserMessage] = useState<string>("");
-    const [aiMessage, setAIMessage] = useState<string>("");
     
     // useEffect(() => {
     //     const fetchAI = async (userMessage: string) => {
@@ -99,7 +96,7 @@ export default function Chatbox(props: chatboxProps) {
         if (!chatref.current) return;
         const message = chatref.current.textContent?.toString();
         if (!message) return;
-        setUserMessage(message);
+        
         chatref.current.innerHTML = "";
         let send = await fetch(
             `${process.env.NEXT_PUBLIC_BASE_URL}/api/chat/${dialogID}`,
@@ -112,6 +109,7 @@ export default function Chatbox(props: chatboxProps) {
                     userID: userId,
                     message: message,
                     isAI: false,
+                    dialogID: dialogID ?? "",
                 }),
             }
         );
@@ -133,7 +131,6 @@ export default function Chatbox(props: chatboxProps) {
         }
         
         const response = await sendRequest(message);
-        setAIMessage(response.message);
         let retrieve = await fetch(
             `${process.env.NEXT_PUBLIC_BASE_URL}/api/chat/${newDialogID}`,
             {
@@ -145,6 +142,7 @@ export default function Chatbox(props: chatboxProps) {
                     userID: userId,
                     message: response.message,
                     isAI: true,
+                    dialogID: newDialogID,
                 }),
             }
         );

@@ -8,14 +8,13 @@ const prisma = new PrismaClient();
 // export const POST = auth(async function POST(
 export async function POST(
     request: NextRequest,
-    { params }: { params: Promise<{ id: string }> }
 ) {
     // if (!request.auth) {
     //     return NextResponse.json({ message: "Not authenticated" }, { status: 401 })
     // }
 
     const data = await request.json();
-    const dialogID = (await params).id;
+    const dialogID = data.dialogID;
     const userID = data.userID;
     const message = data.message;
     const isAI = data.isAI;

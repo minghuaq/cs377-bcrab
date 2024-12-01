@@ -1,5 +1,7 @@
 import { test, expect } from '@playwright/test';
 
+// TODO: Auth checks
+
 test('Chat has Sidebar', async ({ page }) => {
     await page.goto('/chat');
 

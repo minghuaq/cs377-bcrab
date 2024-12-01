@@ -1,13 +1,15 @@
 // import { sendRequest } from "@/app/chat/actions";
-import { redirect, usePathname } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
+import { useRef, useState } from "react";
 import SubmitButton from "../ui/submitbutton";
 import { TextBox } from "../ui/textbox";
 import { useRouter } from "next/navigation";
+
 type chatboxProps = {
     conversation?: message[];
     setConversation?: React.Dispatch<React.SetStateAction<message[]>>;
 };
+
 async function sendRequest(message: string) {
     console.log(message);
     try {
@@ -41,9 +43,7 @@ async function sendRequest(message: string) {
     }
 }
 
-
 export default function Chatbox(props: chatboxProps) {
-    
     const router = useRouter();
 
     const chatref = useRef<HTMLParagraphElement>(null);
@@ -56,7 +56,7 @@ export default function Chatbox(props: chatboxProps) {
 
     const [userMessage, setUserMessage] = useState<string>("");
     const [aiMessage, setAIMessage] = useState<string>("");
-    
+
     // useEffect(() => {
     //     const fetchAI = async (userMessage: string) => {
     //         const response = await sendRequest(userMessage);
@@ -131,7 +131,7 @@ export default function Chatbox(props: chatboxProps) {
             localStorage.setItem("userMessage", JSON.stringify(message));
             router.push(`/chat/${newDialogID}`);
         }
-        
+
         const response = await sendRequest(message);
         setAIMessage(response.message);
         let retrieve = await fetch(
@@ -161,6 +161,7 @@ export default function Chatbox(props: chatboxProps) {
             ];
         });
     }
+
     return (
         <form
             className="flex flex-row gap-2 items-end px-10 py-2 items-center w-full h-fit max-w-3xl"

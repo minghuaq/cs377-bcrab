@@ -1,26 +1,37 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
-import { log } from "console";
-import { auth, NextAuthRequest } from "@/auth";
+import { auth } from "@/auth"
 
 const prisma = new PrismaClient();
 
-// export const POST = auth(async function POST(
 export async function POST(
     request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) {
-    // if (!request.auth) {
-    //     return NextResponse.json({ message: "Not authenticated" }, { status: 401 })
-    // }
+    const session = await auth()
+
+    const userEmail = session?.user?.email
+
+    if (!userEmail) {
+        return NextResponse.json({}, { status: 401 })
+    }
+
+    const user = await prisma.user.findUnique({
+        where: {
+            email: userEmail,
+        },
+    })
+
+    // user would exist if logged in
+    if (!user) {
+        return NextResponse.json({}, { status: 401 })
+    }
 
     const data = await request.json();
     const dialogID = (await params).id;
-    const userID = data.userID;
+    const userID = user.id;
     const message = data.message;
     const isAI = data.isAI;
-
-    log(isAI);
 
     const timestamp = new Date().toISOString();
 
@@ -35,10 +46,10 @@ export async function POST(
                         user: {
                             connectOrCreate: {
                                 create: {
-                                    id: userID,
+                                    email: userEmail
                                 },
                                 where: {
-                                    id: userID,
+                                    email: userEmail
                                 },
                             },
                         },
@@ -60,9 +71,7 @@ export async function POST(
 
     return Response.json({ createMessage });
 }
-//)
 
-// export const GET = auth(async function GET(
 export async function GET(
     request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
@@ -79,4 +88,3 @@ export async function GET(
 
     return Response.json({ messages });
 }
-//)

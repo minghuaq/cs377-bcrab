@@ -1,5 +1,7 @@
 import { test, expect } from '@playwright/test';
 
+// TODO: Auth checks
+
 test('Chat Screenshot', async ({ page }) => {
     await page.goto('/chat');
 

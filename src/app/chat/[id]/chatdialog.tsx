@@ -15,7 +15,7 @@ export default function ChatDialog(props: {
             .then((data) => {
                 setChatData(data.messages);
             });
-    }, []);
+    }, [dialogID]);
     return (
         <div className="flex flex-col h-full w-full items-center overflow-y-auto">
             <div className="flex flex-col h-full w-full max-w-3xl gap-2">

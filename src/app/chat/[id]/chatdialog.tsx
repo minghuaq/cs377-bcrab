@@ -17,24 +17,26 @@ export default function ChatDialog(props: {
             });
     }, []);
     return (
-        <div className="h-full overflow-y-auto">
-            {chatData?.map((message) => (
-                <div key={message.messageID}>
-                    <ChatBubble
-                        isAI={message.isAI}
-                        message={message.message}
-                    ></ChatBubble>
-                </div>
-            ))}
+        <div className="flex flex-col h-full w-full items-center overflow-y-auto">
+            <div className="flex flex-col h-full w-full max-w-3xl gap-2">
+                {chatData?.map((message) => (
+                    <div key={message.messageID}>
+                        <ChatBubble
+                            isAI={message.isAI}
+                            message={message.message}
+                        ></ChatBubble>
+                    </div>
+                ))}
 
-            {props.conversation?.map((message) => (
-                <div key={message.messageID}>
-                    <ChatBubble
-                        isAI={message.isAI}
-                        message={message.message}
-                    ></ChatBubble>
-                </div>
-            ))}
+                {props.conversation?.map((message) => (
+                    <div key={message.messageID}>
+                        <ChatBubble
+                            isAI={message.isAI}
+                            message={message.message}
+                        ></ChatBubble>
+                    </div>
+                ))}
+            </div>
         </div>
     );
 }

@@ -1,15 +1,4 @@
 import { NextRequest } from "next/server";
-
-export async function GET(request: NextRequest) {
-    const res = await fetch("https://openrouter.ai/api/v1/auth/key", {
-        method: "GET",
-        headers: {
-            Authorization: `Bearer ${process.env.API_KEY}`,
-        },
-    });
-    const limit = await res.json();
-    return Response.json({ limit });
-}
 export async function POST(request: NextRequest) {
     const data = await request.json();
     const userMessage = data.message;

@@ -1,8 +1,11 @@
 "use client";
+import { auth } from "@/auth"
 import Chatbox from "@/components/forms/chatbox";
 import { TypewriterEffectSmooth } from "@/components/ui/typewriter-effect";
 
 export default function Home() {
+    // if (!session) return <div>Not authenticated</div>
+
     const words = [
         { text: "What" },
         { text: "can" },

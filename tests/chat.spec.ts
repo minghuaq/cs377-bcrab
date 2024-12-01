@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-// TODO: Auth checks
+test.describe.configure({ mode: 'parallel' });
 
 test('Chat has message box', async ({ page }) => {
     await page.goto('/chat');

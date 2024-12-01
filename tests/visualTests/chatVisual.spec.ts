@@ -1,5 +1,7 @@
 import { test, expect } from '@playwright/test';
 
+test.describe.configure({ mode: 'parallel' });
+
 // TODO: Auth checks
 
 test('Chat Screenshot', async ({ page }) => {

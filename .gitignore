@@ -42,3 +42,4 @@ node_modules/
 /blob-report/
 /playwright/.cache/
 /prisma/migrations/
+playwright/.auth

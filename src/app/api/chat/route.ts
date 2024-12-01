@@ -1,17 +1,27 @@
-import { NextRequest } from "next/server";
+import { auth, NextAuthRequest } from "@/auth"
+import { NextResponse } from "next/server";
 
-export async function GET(request: NextRequest) {
-    const res = await fetch("https://openrouter.ai/api/v1/auth/key", {
-        method: "GET",
-        headers: {
-            Authorization: `Bearer ${process.env.API_KEY}`,
-        },
-    });
-    const limit = await res.json();
-    return Response.json({ limit });
-}
+export const GET = auth(async function GET(request: NextAuthRequest) {
+    if (request.auth) {
+        const res = await fetch("https://openrouter.ai/api/v1/auth/key", {
+            method: "GET",
+            headers: {
+                Authorization: `Bearer ${process.env.API_KEY}`,
+            },
+        });
+        const limit = await res.json();
+        return Response.json({ limit });
+        // return NextResponse.json(request.auth)
+    }
 
-export async function POST(request: NextRequest) {
+    return NextResponse.json({ message: "Not authenticated" }, { status: 401 })
+})
+
+export const POST = auth(async function POST(request: NextAuthRequest) {
+    if (!request.auth) {
+        return NextResponse.json({ message: "Not authenticated" }, { status: 401 })
+    }
+
     const data = await request.json();
     const userMessage = data.message;
 
@@ -56,4 +66,4 @@ export async function POST(request: NextRequest) {
     );
     const product = await res.json();
     return Response.json({ product });
-}
+})

@@ -180,6 +180,7 @@ export default function Chatbox(props: chatboxProps) {
                     contentEditable={"plaintext-only"}
                     suppressContentEditableWarning
                     id="default-chat"
+                    data-testid="chat-input"
                     ref={chatref}
                     className="w-full h-fit max-h-52 overflow-y-auto align-middle outline-none cursor-text"
                     data-placeholder="Message B-CRAB"
@@ -194,7 +195,7 @@ export default function Chatbox(props: chatboxProps) {
                     }}
                 ></p>
             </TextBox>
-            <SubmitButton id="submitButton" />
+            <SubmitButton id="submitButton"/>
         </form>
     );
 }

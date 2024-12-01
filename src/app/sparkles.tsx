@@ -448,8 +448,9 @@ export const Sparkles = (props: SparklesProps) => {
                     alt="cute looking crab"
                     width={150}
                     height={150}
+                    data-testid="bcrab-logo"
                 />
-                {props.logoName}
+                <p data-testid="title">{props.logoName}</p>
             </div>
             <div className="w-[40rem] h-40 relative">
                 {/* Gradients */}
@@ -466,6 +467,7 @@ export const Sparkles = (props: SparklesProps) => {
                     particleDensity={1200}
                     className="w-full h-full"
                     particleColor='#FFFFFF'
+                    data-testid="sparkles"
                 />
 
                 {/* Radial Gradient to prevent sharp edges */}

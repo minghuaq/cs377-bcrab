@@ -1,9 +1,10 @@
 "use client";
+import { SignOut } from "@/components/auth/signout-button";
 import { Sidebar, SidebarBody, SidebarLink } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import { IconBrandHipchat } from "@tabler/icons-react";
 import { motion } from "framer-motion";
-import Image from "next/image";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -34,8 +35,8 @@ export default function SidebarDemo({
             );
             const chatList = await chatListFetch.json();
             const newLinks = chatList.chatHistory.map(
-                (chat: { id: string; userId: string }) => ({
-                    label: chat.id,
+                (chat: { id: string; userId: string; messages: Array<message> }) => ({
+                    label: chat.messages[0].message,
                     href: `/chat/${chat.id}`,
                     icon: (
                         <IconBrandHipchat className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
@@ -47,6 +48,10 @@ export default function SidebarDemo({
         fetchChat();
     }, [pathname]);
     const [open, setOpen] = useState(false);
+
+    // Get user image
+    const { data: session } = useSession()
+
     return (
         <div
             className={cn(
@@ -75,23 +80,34 @@ export default function SidebarDemo({
                             </div>
                         </div>
                     )}
-                    <div>
-                        <SidebarLink
-                            link={{
-                                label: "B-Crab",
-                                href: "/",
-                                icon: (
-                                    <Image
-                                        src="/crabdude.png"
-                                        className="h-7 w-7 flex-shrink-0 rounded-full"
-                                        width={50}
-                                        height={50}
-                                        alt="Avatar"
-                                    />
-                                ),
-                            }}
-                        />
-                    </div>
+                    {open ? (
+                        <div>
+                            <div className="font-normal flex space-x-2 items-center text-sm text-black py-1 relative z-20">
+                                <img
+                                    src={ (session?.user?.image) ? (session?.user?.image) : ("/crabdude.png")}
+                                    alt=""
+                                    className="h-6 w-6 rounded-lg flex-shrink-0"
+                                />
+                                <motion.span
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    className="px-2 font-medium text-black dark:text-white whitespace-pre"
+                                >
+                                    <SignOut />
+                                </motion.span>
+                            </div>
+                        </div>
+                    ) : (
+                        <div>
+                            <div className="font-normal flex space-x-2 items-center text-sm text-black py-1 relative z-20">
+                                <img
+                                    src={ (session?.user?.image) ? (session?.user?.image) : ("/crabdude.png")}
+                                    alt=""
+                                    className="h-6 w-6 rounded-lg flex-shrink-0"
+                                />
+                            </div>
+                        </div>
+                    )}
                 </SidebarBody>
             </Sidebar>
             <Dashboard>{children}</Dashboard>
@@ -101,7 +117,7 @@ export default function SidebarDemo({
 export const Logo = () => {
     return (
         <Link
-            href="/chat"
+            href="/"
             className="font-normal flex space-x-2 items-center text-sm text-black py-1 relative z-20"
         >
             <img

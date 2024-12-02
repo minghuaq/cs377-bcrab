@@ -3,21 +3,22 @@ import { auth } from "@/auth"
 const publicPaths = ["/", "/about", "/about/privacy-policy", "/about/terms-of-service", "/login"]
 
 export default auth((req) => {
-    // console.log(req.nextUrl.pathname.split("/").slice(0, 3).join("/"))
-
     const isAuthAPI = req.nextUrl.pathname.split("/").slice(0, 3).join("/") == "/api/auth";
 
-    // console.log(isAuthAPI)
+    let isDevApi = false
 
-    if (!req.auth && !isAuthAPI && !publicPaths.includes(req.nextUrl.pathname)) {
+    if (process.env.NODE_ENV === "development") {
+        isDevApi = req.nextUrl.pathname.split("/").slice(0, 3).join("/") == "/api/dev"
+    }
+
+    if (!req.auth && !isAuthAPI && !isDevApi && !publicPaths.includes(req.nextUrl.pathname)) {
         const newUrl = new URL("/api/auth/signin?callbackUrl=http%3A%2F%2Flocalhost%3A3000%2F", req.nextUrl.origin)
-        console.log("NOOOO")
         return Response.redirect(newUrl)
     }
 })
 
 export const config = {
-    matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+    matcher: ['/((?!_next/static|_next/image|public|favicon.ico).*)']
 }
 
 // import { NextResponse } from 'next/server'

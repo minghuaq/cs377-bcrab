@@ -1,0 +1,91 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Dialog {
+  id        String    @default(uuid()) // dialogID
+  userId    String
+  user      User      @relation(fields: [userId], references: [id])
+  timestamp DateTime  @default(now())
+  messages  Message[]
+
+  @@id([userId, id]) // Composite primary key
+}
+
+model Message {
+  messageID Int     @default(autoincrement()) // messageID
+  dialogId  String
+  userId    String
+  dialog    Dialog  @relation(fields: [userId, dialogId], references: [userId, id])
+  message   String
+  isAI      Boolean
+  timestamp String
+
+  @@id([userId, dialogId, messageID]) // Composite primary key
+}
+
+// Is unique per person, generally based on email
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  accounts      Account[]
+  // sessions      Session[]
+  dialogs       Dialog[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// There can be multiple accounts per user
+model Account {
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([provider, providerAccountId])
+}
+
+// model Session {
+//   sessionToken String   @unique
+//   userId       String
+//   expires      DateTime
+//   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @updatedAt
+// }
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@id([identifier, token])
+}

@@ -33,8 +33,8 @@ export default function SidebarDemo({
             );
             const chatList = await chatListFetch.json();
             const newLinks = chatList.chatHistory.map(
-                (chat: { id: string; userId: string }) => ({
-                    label: chat.id,
+                (chat: { id: string; userId: string; messages: Array<message> }) => ({
+                    label: chat.messages[0].message,
                     href: `/chat/${chat.id}`,
                     icon: (
                         <IconBrandHipchat className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />

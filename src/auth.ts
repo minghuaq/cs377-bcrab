@@ -31,6 +31,10 @@ if (process.env.NODE_ENV == "development") {
         authorize: async (credentials) => {
             let user = {}
 
+            if (!credentials.email || credentials.email == "") {
+                return null
+            }
+
             // whatever the spaghetti made this work, I dunno. Don't touch this.
             user = {
                 email: credentials.email,

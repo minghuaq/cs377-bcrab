@@ -10,9 +10,11 @@
     "test": "npx playwright test --trace on",
     "test:report": "npx playwright show-report",
     "test:update": "npx playwright test --update-snapshots --trace on",
-    "db:compose": "docker-compose up",
+    "db": "docker-compose up --detach",
     "db:generate": "npx prisma db push",
     "db:migrate": "npm run migrate",
+    "db:wipe": "docker-compose stop && docker-compose rm -f && docker compose up --detach && npx prisma db push",
+    "db:stop": "docker-compose stop",
     "auth:generate": "npx auth secret"
   },
   "dependencies": {

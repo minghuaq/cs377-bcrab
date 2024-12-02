@@ -21,32 +21,32 @@ test('Home has title', async ({ page }) => {
     await expect(page.getByTestId('title')).toBeVisible();
 });
 
-test('Home does not have chat button', async ({ page }) => {
+test('Home does have chat button', async ({ page }) => {
     await page.goto('/');
 
     const button = await page.getByTestId("chat-button").first()
-    await expect(button).not.toBeVisible()
+    await expect(button).toBeVisible()
 });
 
-test('Home does not have sign out button', async ({ page }) => {
+test('Home does have sign out button', async ({ page }) => {
     await page.goto('/');
 
     const button = await page.getByText('Sign Out').first()
-    await expect(button).not.toBeVisible()
+    await expect(button).toBeVisible()
 });
 
-test('Home has sign-in button', async ({ page }) => {
+test('Home doe not have sign-in button', async ({ page }) => {
     await page.goto('/');
 
-    await expect(page.getByRole('button', { name: 'Sign in' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Sign in' })).not.toBeVisible();
 });
 
-test('Sign in navigates to login page', async ({ page, baseURL }) => {
+test('Chat navigates to chats', async ({ page, baseURL }) => {
     await page.goto('/');
 
-    const button = await page.getByText('Sign In').first()
+    const button = await page.getByTestId("chat-button").first()
     await button.click()
-    await page.waitForURL("/api/auth/signin?callbackUrl=%2Fchat")
+    await page.waitForURL("/chat")
 
-    await expect(page.url()).toBe(baseURL + "/api/auth/signin?callbackUrl=%2Fchat")
+    await expect(page.url()).toBe(baseURL + "/chat")
 });

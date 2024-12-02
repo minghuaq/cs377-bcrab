@@ -30,7 +30,7 @@ Key: `MODEL`
 
 ### Base URL
 
-Store your base url, `http://localhost:3000/` for local and `https://cs377-bcrab.vercel.app/` for production.
+Store your base url, `http://localhost:3000` for local and `https://cs377-bcrab.vercel.app` for production.
 
 Key: `NEXT_PUBLIC_BASE_URL`
 

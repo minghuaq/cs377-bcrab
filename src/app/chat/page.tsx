@@ -4,6 +4,7 @@ import { TypewriterEffectSmooth } from "@/components/ui/typewriter-effect";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import ChatDialog from "./[id]/chatdialog";
+
 export default function Home() {
     const words = [
         { text: "What" },
@@ -17,10 +18,12 @@ export default function Home() {
     const parts = pathname.split("/");
     const lastPart = parts[parts.length - 1];
     const urlDiaID = lastPart == "chat" ? null : lastPart;
+
     useEffect(() => {
         console.log("a");
         setConversation([]);
     }, [urlDiaID]);
+
     return (
         <>
             {!urlDiaID && (

@@ -9,21 +9,29 @@ import GitHub from "next-auth/providers/github"
 import Spotify from "next-auth/providers/spotify"
 import Twitter from "next-auth/providers/twitter"
 import Credentials from "next-auth/providers/credentials"
+import { Provider } from "next-auth/providers"
 
-const providers = [Google, Discord, GitHub, Spotify, Twitter]
+const providers:Array<Provider> = [Google, Discord, GitHub, Spotify, Twitter]
 
 // If in development, allow the creation of dummy accounts without any authentication and arbitrary user data.
 // Mostly used for E2E testing.
 if (process.env.NODE_ENV == "development") {
     const cred = Credentials({
-        id: "password",
-        name: "Password",
         credentials: {
             email: { label: "Email" },
             name: { label: "Name" },
             image: { label: "Image" },
         },
         authorize: async (credentials) => {
+            let user = {}
+
+            // whatever the spaghetti made this work, I dunno. Don't touch this.
+            user = {
+                email: credentials.email,
+                name: credentials.name,
+                image: credentials.image
+            }
+
             const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/dev/create-user`, {
                 method: "POST",
                 body: JSON.stringify({
@@ -36,14 +44,10 @@ if (process.env.NODE_ENV == "development") {
             })
 
             if (!res.ok) {
-                return
+                return null
             }
 
-            return {
-                email: credentials.email,
-                name: credentials.name,
-                image: credentials.image,
-            }
+            return user
         },
     })
 

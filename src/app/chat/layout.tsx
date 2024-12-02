@@ -82,7 +82,7 @@ export default function SidebarDemo({
                         <div>
                             <div className="font-normal flex space-x-2 items-center text-sm text-black py-1 relative z-20">
                                 <img
-                                    src={ session?.user?.image }
+                                    src={ (session?.user?.image) ? (session?.user?.image) : ("/crabdude.png")}
                                     alt=""
                                     className="h-6 w-6 rounded-lg flex-shrink-0"
                                 />
@@ -99,7 +99,7 @@ export default function SidebarDemo({
                         <div>
                             <div className="font-normal flex space-x-2 items-center text-sm text-black py-1 relative z-20">
                                 <img
-                                    src={ session?.user?.image }
+                                    src={ (session?.user?.image) ? (session?.user?.image) : ("/crabdude.png")}
                                     alt=""
                                     className="h-6 w-6 rounded-lg flex-shrink-0"
                                 />

@@ -116,7 +116,7 @@ Returns a list of chat message histories, each with chat history ordered from ol
 
 Only enabled in development environments. Creates a dummy user in the database for testing and debugging purposes.
 
-#### GET
+#### POST
 
 Provide a user object with desired email, name, and image to be used for the user.
 
@@ -131,3 +131,43 @@ Provide a user object with desired email, name, and image to be used for the use
 ```
 
 responds with 200 if the provided email was already found or was successfully created, returns 500 on failure to create desired user.
+
+### Dev Drop User
+
+`/api/dev/drop-user`
+
+Only enabled in development environments. Deletes all user table data on a user based on the provided email.
+
+#### POST
+
+Provide a user email to be deleted.
+
+```json
+{
+    "user": {
+        "email": string
+    }
+}
+```
+
+responds with 200 if the provided email doesn't exist or was dropped.
+
+### Dev Drop Dialogs
+
+`/api/dev/drop-dialogs`
+
+Only enabled in development environments. Drops all of the dialogs for a given user based on email.
+
+#### POST
+
+Provide a user object with desired email.
+
+```json
+{
+    "user": {
+        "email": string
+    }
+}
+```
+
+responds with 200 if the user has no dialogs or the dialogs were successfully dropped.

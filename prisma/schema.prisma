@@ -14,10 +14,11 @@ datasource db {
 }
 
 model Dialog {
-  id       String    @default(uuid()) // dialogID
-  userId   String
-  user     User      @relation(fields: [userId], references: [id])
-  messages Message[]
+  id        String    @default(uuid()) // dialogID
+  userId    String
+  user      User      @relation(fields: [userId], references: [id])
+  timestamp DateTime  @default(now())
+  messages  Message[]
 
   @@id([userId, id]) // Composite primary key
 }
@@ -36,14 +37,14 @@ model Message {
 
 // Is unique per person, generally based on email
 model User {
-  id            String          @id @default(cuid())
+  id            String    @id @default(cuid())
   name          String?
-  email         String          @unique
+  email         String    @unique
   emailVerified DateTime?
   image         String?
   accounts      Account[]
   // sessions      Session[]
-  dialogs Dialog[]
+  dialogs       Dialog[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

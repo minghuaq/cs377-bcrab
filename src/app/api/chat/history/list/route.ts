@@ -27,9 +27,11 @@ export async function GET(request: NextRequest) {
         },
         include: {
             // TODO: This should strip messages down to the first message the user sent.
-            messages: {},
-        }
+            messages: true,
+        },
+        orderBy: {
+            timestamp: "desc",
+        },
     });
-
     return Response.json({ chatHistory });
 }

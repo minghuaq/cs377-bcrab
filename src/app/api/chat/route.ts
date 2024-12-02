@@ -1,15 +1,54 @@
 import { NextRequest } from "next/server";
+type TextContent = {
+    type: "text";
+    text: string;
+};
 
+type ImageContentPart = {
+    type: "image_url";
+    image_url: {
+        url: string; // URL or base64 encoded image data
+        detail?: string; // Optional, defaults to 'auto'
+    };
+};
+type ContentPart = TextContent | ImageContentPart;
+type Message =
+    | {
+          role: "user" | "assistant" | "system";
+          // ContentParts are only for the 'user' role:
+          content: string | ContentPart[];
+          // If "name" is included, it will be prepended like this
+          // for non-OpenAI models: `{name}: {content}`
+          name?: string;
+      }
+    | {
+          role: "tool";
+          content: string;
+          tool_call_id: string;
+          name?: string;
+      };
 export async function POST(request: NextRequest) {
     const data = await request.json();
-    const userMessage = data.message;
-
+    const userMessage = data.messagelist;
     // Disable for now
     // const searchParams = request.nextUrl.searchParams
 
     // const userMessage = searchParams.get('user')
     // TODO: Message Sanitization.
-
+    let messages: Message[] = [
+        {
+            role: "system",
+            content: "",
+        },
+    ];
+    const newMessages = userMessage.map(
+        (msg: { isAI: boolean; message: string }) => ({
+            role: msg.isAI ? "assistent" : "user",
+            content: msg.message,
+            // name: "",
+        })
+    );
+    messages = [...messages, ...newMessages];
     const res = await fetch(
         `${
             process.env.API_PATH ||
@@ -28,17 +67,7 @@ export async function POST(request: NextRequest) {
                     process.env.MODEL ||
                     "meta-llama/llama-3.1-405b-instruct:free"
                 }`,
-                messages: [
-                    {
-                        role: "system",
-                        content: "",
-                    },
-                    {
-                        role: "user",
-                        content: userMessage,
-                        // name: "",
-                    },
-                ],
+                messages: messages
                 // stream: true,
             }),
         }

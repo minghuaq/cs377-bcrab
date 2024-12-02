@@ -3,21 +3,34 @@ import { usePathname, useRouter } from "next/navigation";
 import { useRef } from "react";
 import SubmitButton from "../ui/submitbutton";
 import { TextBox } from "../ui/textbox";
+import { revalidatePath } from "next/cache";
+import { METHODS } from "http";
 
 type chatboxProps = {
     setConversation?: React.Dispatch<React.SetStateAction<message[]>>;
     setDialogID?: React.Dispatch<React.SetStateAction<string | null>>;
 };
 
-async function sendRequest(message: string) {
-    console.log(message);
+async function sendRequest(dialogID: string) {
     try {
+        let message = await fetch(
+            `${process.env.NEXT_PUBLIC_BASE_URL}/api/chat/${dialogID}`,
+            {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+        let messagejson = await message.json();
+        let messagelist = messagejson.messages;
+        console.log("a:", messagelist);
         let data = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/chat`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify({ message }),
+            body: JSON.stringify({ messagelist }),
         });
 
         if (!data.ok) {
@@ -89,7 +102,7 @@ export default function Chatbox(props: chatboxProps) {
             });
         }
 
-        const response = await sendRequest(message);
+        const response = await sendRequest(newDialogID);
         let retrieve = await fetch(
             `${process.env.NEXT_PUBLIC_BASE_URL}/api/chat/${newDialogID}`,
             {

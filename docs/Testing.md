@@ -4,11 +4,13 @@ Testing is handled by Playwright. For the most part end to end (E2E) testing is 
 
 ## Running
 
-To run the tests, a running version of the app must be made. This can either be achieved in development with the `npm run dev` script, or production builds can be tested with the `npm run start` script. Playwright is able to start it's own webserver, but a production build must be made first using `npm run build`.
+To run the tests, start by setting up a dev environment as detailed in [Running](./Running.md).
 
-Once a running app or production build is ready, simply run `npm run test` and the full test suite will be run. Once complete, a webpage will be opened showing full traces of every test and their statuses.
+Then run `npm run test` to run the full test suite. The results will automatically be opened in your default browser.
 
 Once the test suite has been run, you can view the results, including full traces, with the command `npm run test:report`.
+
+Tests should not be run against production builds as the tests cannot fully authenticate in production builds. An additional insecure credential manager is added in development to allow playwright to test authentication.
 
 ## Updating screenshots
 

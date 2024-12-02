@@ -1,98 +1,133 @@
 # API Reference
 
-The api is available at `/api/[version]`
+The api is available at `/api`
 
-## V0 API Endpoints
+## API Endpoints
 
 ### Chat
 
 `/api/chat/`
-<!-- TODO -->
-
-#### GET
-
-<!-- TODO -->
+Gets an LLM powered completion from provided chain of messages.
 
 #### POST
 
-<!-- TODO -->
+Provide user/ai messages in body ordered from oldest to newest.
 
-### Chat [id]
+```json
+{
+    "messages": [
+        {
+            "message": string,
+            "isAI": boolean
+        },
+        ...
+    ]
+}
+
+```
+
+returns an LLM response. See [https://openrouter.ai/docs/responses](https://openrouter.ai/docs/responses) for details.
+
+### Chat `[id]`
 
 `/api/chat/[id]`
-<!-- TODO -->
+
+Gets or stores chat messages based on `[id]`
 
 #### GET
 
-<!-- TODO -->
+Returns a list of chat messages ordered from oldest to newest from the given chat id.
 
-#### POST
-
-<!-- TODO -->
-
-## V1 API Endpoints
-
-### New Chat
-
-`/api/v1/chat/new`
-
-#### POST
-
-Create a request for a new chat dialog.
-
-Creates a new chat dialog with an initial message. The initial message gets stored in the database and issued a new dialog uuid. From here the client can be redirected to a new chat page using the dialog uuid to continue chatting.
-
-##### Payload
-
-`{
-    "message": String // The user's message
-}`
-
-##### Response
-
-200:
-`{
-    "dialogID": String // The UUID of the newly created chat
-}`
-
-### Get Chat [id]
-
-`/api/v1/chat/[id]`
-
-`id`: UUID of the desired chat
-
-#### GET
-
-Fetches the chat with the given dialog UUID given in `id`. If the last message in the chain was a user, then an LLM response will
-
-##### Response
-
-200:
-`{
-    "messages" : [
+```json
+{
+    "messages": [
         {
-            "messageID": int, // ID of this message
-            "message": String, // Contents of the message
-            "isAI": false, // Wether the given message was from the user, or LLM
-            "timestamp": "2024-11-30T21:25:11.954Z" // Timestamp the message was recieved by the server.
+            "messageID": int,
+            "dialogId": string,
+            "userId": string,
+            "message": string,
+            "isAI": boolean,
+            "timestamp": string // ISO formated date string
         },
-        // ...
+        ...
     ]
-}`
+}
+```
 
 #### POST
 
-Send a new user message. Response will contain the generated LLM response.
+Puts a new message in the database.
 
-##### Payload
+```json
+{
+    "dialogID": string,
+    "message": string,
+    "isAI": boolean
+}
 
-`{
-    "message": String // The user's message
-}`
+```
 
-##### Response
+Responds with the id of the created message and associated dialog.
 
-200:
-`{
-    "dialogID": String // The UUID of the newly created chat
-}`
+```json
+{
+    "dialogID": string,
+    "messageID": string
+}
+
+```
+
+### History List
+
+`/api/chat/history/list`
+
+Get all user chat histories
+
+#### GET
+
+Returns a list of chat message histories, each with chat history ordered from oldest to newest.
+
+```json
+{
+    "chatHistory": [
+        {
+            "id": string, //dialogID
+            "userId": string,
+            "messages": [
+                {
+                    "messageID": int,
+                    "dialogId": string,
+                    "userId": string,
+                    "message": string,
+                    "isAI": boolean,
+                    "timestamp": string
+                },
+                ...
+            ]
+        },
+        ...
+    ]
+}
+```
+
+### Dev Create User
+
+`/api/dev/create-user`
+
+Only enabled in development environments. Creates a dummy user in the database for testing and debugging purposes.
+
+#### GET
+
+Provide a user object with desired email, name, and image to be used for the user.
+
+```json
+{
+    "user": {
+        "email": string,
+        "name": string,
+        "image": string
+    }
+}
+```
+
+responds with 200 if the provided email was already found or was successfully created, returns 500 on failure to create desired user.

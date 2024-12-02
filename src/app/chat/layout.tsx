@@ -7,6 +7,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useFormStatus } from "react-dom";
 type sidebarListProps = {
     label: string;
     href: string;
@@ -17,8 +18,9 @@ export default function SidebarDemo({
 }: Readonly<{
     children: React.ReactNode;
 }>) {
+    const status = useFormStatus()
     const [links, setLinks] = useState<sidebarListProps[]>();
-    const pathname = usePathname()
+    const pathname = usePathname();
     useEffect(() => {
         async function fetchChat() {
             const chatListFetch = await fetch(

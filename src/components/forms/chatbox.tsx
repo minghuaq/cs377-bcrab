@@ -3,6 +3,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useRef } from "react";
 import SubmitButton from "../ui/submitbutton";
 import { TextBox } from "../ui/textbox";
+import { revalidatePath } from "next/cache";
 
 type chatboxProps = {
     setConversation?: React.Dispatch<React.SetStateAction<message[]>>;

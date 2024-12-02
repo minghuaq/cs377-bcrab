@@ -15,7 +15,7 @@ Provide user/ai messages in body ordered from oldest to newest.
 
 ```json
 {
-    "messages": [
+    "messagelist": [
         {
             "message": string,
             "isAI": boolean

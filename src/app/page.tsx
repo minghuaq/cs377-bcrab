@@ -38,9 +38,17 @@ export default async function Home() {
         </Link>
     }
 
+    let signout
+
+    if (session) {
+        signout = <div className="px-4 py-3 justify-items-end">
+                <SignOut />
+            </div>
+    }
+
     return (
         <div>
-            <SignOut />
+            { signout }
             <div className="h-dvh w-full flex flex-col items-center justify-center overflow-hidden rounded-md">
                 <Sparkles logoName="B-CRAB" />
                 { mainButton }

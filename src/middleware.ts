@@ -13,13 +13,12 @@ export default auth((req) => {
 
     if (!req.auth && !isAuthAPI && !isDevApi && !publicPaths.includes(req.nextUrl.pathname)) {
         const newUrl = new URL("/api/auth/signin?callbackUrl=http%3A%2F%2Flocalhost%3A3000%2F", req.nextUrl.origin)
-        console.log("NOOOO")
         return Response.redirect(newUrl)
     }
 })
 
 export const config = {
-    matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+    matcher: ['/((?!_next/static|_next/image|public|favicon.ico).*)']
 }
 
 // import { NextResponse } from 'next/server'

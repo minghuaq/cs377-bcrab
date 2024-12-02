@@ -11,7 +11,13 @@ import Twitter from "next-auth/providers/twitter"
 import Credentials from "next-auth/providers/credentials"
 import { Provider } from "next-auth/providers"
 
-const providers:Array<Provider> = [Google, Discord, GitHub, Spotify, Twitter]
+const providers: Array<Provider> = [
+    Google,
+    Discord,
+    GitHub,
+    Spotify,
+    Twitter
+]
 
 // If in development, allow the creation of dummy accounts without any authentication and arbitrary user data.
 // Mostly used for E2E testing.

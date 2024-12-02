@@ -31,6 +31,5 @@ export async function GET(request: NextRequest) {
         }
     });
 
-    console.log(chatHistory[0].messages)
     return Response.json({ chatHistory });
 }

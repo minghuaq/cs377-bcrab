@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import ChatBubble from "./chatbubble";
+
 export default function ChatDialog(props: {
     dialogID: string;
     conversation: message[];
@@ -24,7 +25,7 @@ export default function ChatDialog(props: {
                         <ChatBubble
                             isAI={message.isAI}
                             message={message.message}
-                        ></ChatBubble>
+                        />
                     </div>
                 ))}
 
@@ -33,7 +34,7 @@ export default function ChatDialog(props: {
                         <ChatBubble
                             isAI={message.isAI}
                             message={message.message}
-                        ></ChatBubble>
+                        />
                     </div>
                 ))}
             </div>

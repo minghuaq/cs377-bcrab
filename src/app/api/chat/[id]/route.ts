@@ -27,13 +27,8 @@ export async function POST(
     }
 
     const data = await request.json();
-<<<<<<< HEAD
     const dialogID = data.dialogID;
-    const userID = data.userID;
-=======
-    const dialogID = (await params).id;
     const userID = user.id;
->>>>>>> 2fb5e807ae8cb6046939b02a23dff31b9fc05de2
     const message = data.message;
     const isAI = data.isAI;
 

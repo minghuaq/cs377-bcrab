@@ -1,13 +1,12 @@
 // import { sendRequest } from "@/app/chat/actions";
-import { usePathname } from "next/navigation";
-import { useRef, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useRef } from "react";
 import SubmitButton from "../ui/submitbutton";
 import { TextBox } from "../ui/textbox";
-import { useRouter } from "next/navigation";
 
 type chatboxProps = {
-    conversation?: message[];
     setConversation?: React.Dispatch<React.SetStateAction<message[]>>;
+    setDialogID?: React.Dispatch<React.SetStateAction<string | null>>;
 };
 
 async function sendRequest(message: string) {
@@ -44,8 +43,6 @@ async function sendRequest(message: string) {
 }
 
 export default function Chatbox(props: chatboxProps) {
-    const router = useRouter();
-
     const chatref = useRef<HTMLParagraphElement>(null);
     const userId = "test";
 
@@ -53,50 +50,11 @@ export default function Chatbox(props: chatboxProps) {
     const parts = pathname.split("/");
     const lastPart = parts[parts.length - 1];
     const dialogID = lastPart == "chat" ? null : lastPart;
-    
-    // useEffect(() => {
-    //     const fetchAI = async (userMessage: string) => {
-    //         const response = await sendRequest(userMessage);
-    //         setAIMessage(response.message);
-    //         let retrieve = await fetch(
-    //             `${process.env.NEXT_PUBLIC_BASE_URL}/api/chat/${dialogID}`,
-    //             {
-    //                 method: "POST",
-    //                 headers: {
-    //                     "Content-Type": "application/json",
-    //                 },
-    //                 body: JSON.stringify({
-    //                     userID: userId,
-    //                     message: response.message,
-    //                     isAI: true,
-    //                 }),
-    //             }
-    //         );
-    //         let dialog = await retrieve.json();
-    //         props.setConversation?.((prev) => {
-    //             return [
-    //                 ...prev,
-    //                 {
-    //                     messageID: dialog.createMessage.messageID,
-    //                     message: response.message,
-    //                     isAI: true,
-    //                 },
-    //             ];
-    //         });
-    //     };
-    //     const savedMessage = localStorage.getItem("userMessage");
-    //     if (savedMessage) {
-    //         setUserMessage(savedMessage);
-    //         localStorage.removeItem("userMessage");
-    //     }
-    //     if (userMessage) fetchAI(userMessage);
-    // }, [userMessage]);
-
     async function handleSubmit() {
         if (!chatref.current) return;
         const message = chatref.current.textContent?.toString();
         if (!message) return;
-        
+
         chatref.current.innerHTML = "";
         let send = await fetch(
             `${process.env.NEXT_PUBLIC_BASE_URL}/api/chat/${dialogID}`,
@@ -114,20 +72,21 @@ export default function Chatbox(props: chatboxProps) {
             }
         );
         let messageSent = await send.json();
-        props.setConversation?.((prev) => {
-            return [
-                ...prev,
-                {
-                    messageID: messageSent.createMessage.messageID,
-                    message: message,
-                    isAI: false,
-                },
-            ];
-        });
         let newDialogID = messageSent.createMessage.dialogId;
         if (!dialogID) {
-            localStorage.setItem("userMessage", JSON.stringify(message));
-            router.push(`/chat/${newDialogID}`);
+            window.history.pushState({}, "", `/chat/${newDialogID}`);
+            props.setDialogID?.(newDialogID);
+        } else {
+            props.setConversation?.((prev) => {
+                return [
+                    ...prev,
+                    {
+                        messageID: messageSent.createMessage.messageID,
+                        message: message,
+                        isAI: false,
+                    },
+                ];
+            });
         }
 
         const response = await sendRequest(message);
@@ -147,7 +106,6 @@ export default function Chatbox(props: chatboxProps) {
             }
         );
         let messageReceived = await retrieve.json();
-        console.log(messageReceived)
         props.setConversation?.((prev) => {
             return [
                 ...prev,
@@ -194,7 +152,7 @@ export default function Chatbox(props: chatboxProps) {
                     }}
                 ></p>
             </TextBox>
-            <SubmitButton id="submitButton"/>
+            <SubmitButton id="submitButton" />
         </form>
     );
 }

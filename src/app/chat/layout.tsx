@@ -1,52 +1,49 @@
 "use client";
-import { useState } from "react";
 import { Sidebar, SidebarBody, SidebarLink } from "@/components/ui/sidebar";
-import {
-    IconArrowLeft,
-    IconBrandTabler,
-    IconSettings,
-    IconUserBolt,
-} from "@tabler/icons-react";
-import Link from "next/link";
+import { cn } from "@/lib/utils";
+import { IconBrandHipchat } from "@tabler/icons-react";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import { cn } from "@/lib/utils";
-
-export default  function SidebarDemo({
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+type sidebarListProps = {
+    label: string;
+    href: string;
+    icon: React.JSX.Element | React.ReactNode;
+};
+export default function SidebarDemo({
     children,
 }: Readonly<{
     children: React.ReactNode;
 }>) {
-    const links = [
-        {
-            label: "Dashboard",
-            href: "#",
-            icon: (
-                <IconBrandTabler className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
-            ),
-        },
-        {
-            label: "Profile",
-            href: "#",
-            icon: (
-                <IconUserBolt className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
-            ),
-        },
-        {
-            label: "Settings",
-            href: "#",
-            icon: (
-                <IconSettings className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
-            ),
-        },
-        {
-            label: "Logout",
-            href: "#",
-            icon: (
-                <IconArrowLeft className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
-            ),
-        },
-    ];
+    const [links, setLinks] = useState<sidebarListProps[]>();
+    const pathname = usePathname()
+    useEffect(() => {
+        async function fetchChat() {
+            const chatListFetch = await fetch(
+                `${process.env.NEXT_PUBLIC_BASE_URL}/api/chat/history/list`,
+                {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                }
+            );
+            const chatList = await chatListFetch.json();
+            const newLinks = chatList.chatHistory.map(
+                (chat: { id: string; userId: string }) => ({
+                    label: chat.id,
+                    href: `/chat/${chat.id}`,
+                    icon: (
+                        <IconBrandHipchat className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+                    ),
+                })
+            );
+            setLinks(newLinks);
+        }
+        fetchChat();
+    }, [pathname]);
     const [open, setOpen] = useState(false);
     return (
         <div
@@ -57,14 +54,25 @@ export default  function SidebarDemo({
         >
             <Sidebar open={open} setOpen={setOpen}>
                 <SidebarBody className="justify-between gap-10">
-                    <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
-                        {open ? <Logo /> : <LogoIcon />}
-                        <div className="mt-8 flex flex-col gap-2">
-                            {links.map((link, idx) => (
-                                <SidebarLink key={idx} link={link} />
-                            ))}
+                    {open ? (
+                        <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
+                            <Logo />
+                            <div className="mt-8 flex flex-col gap-2">
+                                {links?.map((link, idx) => (
+                                    <SidebarLink key={idx} link={link} />
+                                ))}
+                            </div>
                         </div>
-                    </div>
+                    ) : (
+                        <div className="flex flex-col flex-1 overflow-y-hidden overflow-x-hidden">
+                            <LogoIcon />
+                            <div className="mt-8 flex flex-col gap-2">
+                                {links?.map((link, idx) => (
+                                    <SidebarLink key={idx} link={link} />
+                                ))}
+                            </div>
+                        </div>
+                    )}
                     <div>
                         <SidebarLink
                             link={{
@@ -91,16 +99,20 @@ export default  function SidebarDemo({
 export const Logo = () => {
     return (
         <Link
-            href="#"
+            href="/chat"
             className="font-normal flex space-x-2 items-center text-sm text-black py-1 relative z-20"
         >
-            <div className="h-5 w-6 bg-black dark:bg-white rounded-br-lg rounded-tr-sm rounded-tl-lg rounded-bl-sm flex-shrink-0" />
+            <img
+                src="/crabdude.png"
+                alt=""
+                className="h-5 w-6 rounded-br-lg rounded-tr-sm rounded-tl-lg rounded-bl-sm flex-shrink-0"
+            />
             <motion.span
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 className="font-medium text-black dark:text-white whitespace-pre"
             >
-                Acet Labs
+                B-Crab
             </motion.span>
         </Link>
     );
@@ -111,7 +123,12 @@ export const LogoIcon = () => {
             href="#"
             className="font-normal flex space-x-2 items-center text-sm text-black py-1 relative z-20"
         >
-            <div className="h-5 w-6 bg-black dark:bg-white rounded-br-lg rounded-tr-sm rounded-tl-lg rounded-bl-sm flex-shrink-0" />
+            {/* <div className="h-5 w-6 bg-black dark:bg-white rounded-br-lg rounded-tr-sm rounded-tl-lg rounded-bl-sm flex-shrink-0" /> */}
+            <img
+                src="/crabdude.png"
+                alt=""
+                className="h-5 w-6 rounded-br-lg rounded-tr-sm rounded-tl-lg rounded-bl-sm flex-shrink-0"
+            />
         </Link>
     );
 };
@@ -124,7 +141,7 @@ const Dashboard = ({
 }>) => {
     return (
         <div className="flex flex-1">
-            <div className="p-2 md:p-10 rounded-tl-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 flex flex-col flex-wrap content-center gap-2 flex-1 w-full h-full">    
+            <div className="rounded-tl-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 flex flex-col flex-wrap content-center gap-2 flex-1 w-full h-full">
                 {children}
             </div>
         </div>

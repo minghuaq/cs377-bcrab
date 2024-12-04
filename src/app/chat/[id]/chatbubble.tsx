@@ -20,7 +20,7 @@ export default function ChatBubble(props: { message: string; isAI: boolean }) {
                 <div className={"flex flex-row-reverse"}>
                     <div
                         className={
-                            "bg-[rgba(50,50,50,.85)] max-w-[70%] rounded-3xl px-5 py-2.5 whitespace-pre-wrap text-wrap break-all"
+                            "bg-[rgba(50,50,50,.85)] max-w-[70%] rounded-3xl px-5 py-2.5 whitespace-pre-wrap text-wrap break-words"
                         }
                     >
                         {props.message}

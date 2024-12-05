@@ -3,7 +3,6 @@ import { auth } from "@/auth"
 const publicPaths = ["/", "/about", "/about/privacy-policy", "/about/terms-of-service", "/login"]
 
 export default auth((req) => {
-    console.log('Request URL:', req.nextUrl)
     const isAuthAPI = req.nextUrl.pathname.split("/").slice(0, 3).join("/") == "/api/auth";
 
     let isDevApi = false
@@ -19,7 +18,7 @@ export default auth((req) => {
 })
 
 export const config = {
-    matcher: ["/((?!_next/static|_next/image|favicon.ico|icon.png).*)"]
+    matcher: ["/((?!_next/static|_next/image|favicon.ico|icon.png).*)", "/_next/image*"]
 }
 
 // import { NextResponse } from 'next/server'

@@ -84,7 +84,7 @@ export default function SidebarDemo({
                         <div>
                             <div className="font-normal flex space-x-2 items-center text-sm text-black py-1 relative z-20">
                                 <img
-                                    src={ (session?.user?.image) ? (session?.user?.image) : ("/crabdude.png")}
+                                    src={ (session?.user?.image) ?? ("/images/crabdude.png")}
                                     alt=""
                                     className="h-6 w-6 rounded-lg flex-shrink-0"
                                 />
@@ -101,7 +101,7 @@ export default function SidebarDemo({
                         <div>
                             <div className="font-normal flex space-x-2 items-center text-sm text-black py-1 relative z-20">
                                 <img
-                                    src={ (session?.user?.image) ? (session?.user?.image) : ("/crabdude.png")}
+                                    src={ (session?.user?.image) ?? ("/images/crabdude.png")}
                                     alt=""
                                     className="h-6 w-6 rounded-lg flex-shrink-0"
                                 />
@@ -121,7 +121,7 @@ export const Logo = () => {
             className="font-normal flex space-x-2 items-center text-sm text-black py-1 relative z-20"
         >
             <img
-                src="/crabdude.png"
+                src="/images/crabdude.png"
                 alt=""
                 className="h-5 w-6 rounded-br-lg rounded-tr-sm rounded-tl-lg rounded-bl-sm flex-shrink-0"
             />
@@ -143,7 +143,7 @@ export const LogoIcon = () => {
         >
             {/* <div className="h-5 w-6 bg-black dark:bg-white rounded-br-lg rounded-tr-sm rounded-tl-lg rounded-bl-sm flex-shrink-0" /> */}
             <img
-                src="/crabdude.png"
+                src="/images/crabdude.png"
                 alt=""
                 className="h-5 w-6 rounded-br-lg rounded-tr-sm rounded-tl-lg rounded-bl-sm flex-shrink-0"
             />

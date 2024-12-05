@@ -444,7 +444,7 @@ export const Sparkles = (props: SparklesProps) => {
         <div className="w-full flex flex-col items-center justify-center overflow-hidden rounded-md">
             <div className="flex flex-col flex-wrap items-center md:text-3xl text-xl lg:text-9xl font-bold text-center text-white relative z-20">
                 <Image
-                    src="/crabdude.png"
+                    src="/images/crabdude.png"
                     alt="cute looking crab"
                     width={150}
                     height={150}

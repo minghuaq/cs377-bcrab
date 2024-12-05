@@ -18,7 +18,7 @@ export default auth((req) => {
 })
 
 export const config = {
-    matcher: ["/((?!_next/static|/_next/image|favicon.ico|icon.png).*)"]
+    matcher: ["/((?!.*\\..*|_next/static|_next/image|favicon.ico|icon.png).*)"]
 }
 
 // import { NextResponse } from 'next/server'

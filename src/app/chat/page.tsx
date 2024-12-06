@@ -20,7 +20,6 @@ export default function Home() {
     const urlDiaID = lastPart == "chat" ? null : lastPart;
 
     useEffect(() => {
-        console.log("a");
         setConversation([]);
     }, [urlDiaID]);
 

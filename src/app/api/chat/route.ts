@@ -30,6 +30,11 @@ type Message =
 export async function POST(request: NextRequest) {
     const data = await request.json();
     const userMessage = data.messagelist;
+    // Disable for now
+    // const searchParams = request.nextUrl.searchParams
+
+    // const userMessage = searchParams.get('user')
+    // TODO: Message Sanitization.
     let messages: Message[] = [
         {
             role: "system",
@@ -62,18 +67,11 @@ export async function POST(request: NextRequest) {
                     process.env.MODEL ||
                     "meta-llama/llama-3.1-405b-instruct:free"
                 }`,
-                messages: messages,
-                stream: true,
+                messages: messages
+                // stream: true,
             }),
         }
     );
-    console.log(await res.text());
-    // const response = await res.json();
-    // for await (const chunk of response) {
-    //     console.log(chunk.choices[0]?.delta?.content || "")
-    // }
-    // console.log("a",await res.json())
-    // const product = await res.json();
-    // console.log(await res);
-    return Response.json({});
+    const product = await res.json();
+    return Response.json({ product });
 }

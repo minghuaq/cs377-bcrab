@@ -68,6 +68,8 @@ export async function POST(
         },
     });
 
+    console.log(createMessage)
+
     return Response.json({ createMessage });
 }
 

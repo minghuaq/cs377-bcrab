@@ -24,7 +24,6 @@ async function sendRequest(dialogID: string) {
         );
         let messagejson = await message.json();
         let messagelist = messagejson.messages;
-        console.log("a:", messagelist);
         let data = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/chat`, {
             method: "POST",
             headers: {
@@ -45,7 +44,7 @@ async function sendRequest(dialogID: string) {
             };
         }
 
-        return { message: response.product.choices[0].message.content };
+        return { message: response.product.choices[0].delta?.content };
     } catch (err) {
         if (err instanceof Error) {
             return { message: err.message };

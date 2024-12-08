@@ -1,79 +1,80 @@
+import { auth } from "@/auth";
+import { createOpenRouter } from "@openrouter/ai-sdk-provider";
+import { ChatRequestOptions, CoreMessage, streamText } from "ai";
 import { NextRequest } from "next/server";
-type TextContent = {
-    type: "text";
-    text: string;
-};
+import OpenAI from "openai";
 
-type ImageContentPart = {
-    type: "image_url";
-    image_url: {
-        url: string; // URL or base64 encoded image data
-        detail?: string; // Optional, defaults to 'auto'
-    };
+const openai = new OpenAI({
+    baseURL: "https://openrouter.ai/api/v1",
+    apiKey: process.env.API_KEY,
+    defaultHeaders: {
+        // "HTTP-Referer": $YOUR_SITE_URL, // Optional, for including your app on openrouter.ai rankings.
+        // "X-Title": $YOUR_APP_NAME, // Optional. Shows in rankings on openrouter.ai.
+    },
+});
+const openrouter = createOpenRouter({
+    apiKey: process.env.API_KEY,
+});
+export const maxDuration = 30;
+
+export const config = {
+    runtime: "edge",
 };
-type ContentPart = TextContent | ImageContentPart;
-type Message =
-    | {
-          role: "user" | "assistant" | "system";
-          // ContentParts are only for the 'user' role:
-          content: string | ContentPart[];
-          // If "name" is included, it will be prepended like this
-          // for non-OpenAI models: `{name}: {content}`
-          name?: string;
-      }
-    | {
-          role: "tool";
-          content: string;
-          tool_call_id: string;
-          name?: string;
-      };
 export async function POST(request: NextRequest) {
-    const data = await request.json();
-    const userMessage = data.messagelist;
-    let messages: Message[] = [
-        {
-            role: "system",
-            content: "",
-        },
-    ];
-    const newMessages = userMessage.map(
-        (msg: { isAI: boolean; message: string }) => ({
-            role: msg.isAI ? "assistent" : "user",
-            content: msg.message,
-            // name: "",
-        })
-    );
-    messages = [...messages, ...newMessages];
-    const res = await fetch(
-        `${
-            process.env.API_PATH ||
-            "https://openrouter.ai/api/v1/chat/completions"
-        }`,
-        {
-            method: "POST",
-            headers: {
-                Authorization: `Bearer ${process.env.API_KEY}`,
-                //   "HTTP-Referer": `${YOUR_SITE_URL}`, // Optional, for including your app on openrouter.ai rankings.
-                //   "X-Title": `${YOUR_SITE_NAME}`, // Optional. Shows in rankings on openrouter.ai.
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                model: `${
-                    process.env.MODEL ||
-                    "meta-llama/llama-3.1-405b-instruct:free"
-                }`,
-                messages: messages,
-                stream: true,
-            }),
-        }
-    );
-    console.log(await res.text());
-    // const response = await res.json();
-    // for await (const chunk of response) {
-    //     console.log(chunk.choices[0]?.delta?.content || "")
-    // }
-    // console.log("a",await res.json())
-    // const product = await res.json();
-    // console.log(await res);
-    return Response.json({});
+    const {
+        messages,
+        options,
+    }: { messages: CoreMessage[]; options: ChatRequestOptions } =
+        await request.json();
+    const dialogID = options;
+    console.log(dialogID);
+    const newMessage = messages[messages.length - 1];
+    const session = await auth();
+
+    // let send = await fetch(
+    //     `${process.env.NEXT_PUBLIC_BASE_URL}/api/chat/${dialogID}`,
+    //     {
+    //         method: "POST",
+    //         headers: {
+    //             "Content-Type": "application/json",
+    //         },
+    //         body: JSON.stringify({
+    //             userID: session?.user?.id,
+    //             message: newMessage.content,
+    //             isAI: false,
+    //             dialogID: dialogID ?? "",
+    //         }),
+    //     }
+    // );
+    // let messageSent = await send.json();
+    // let newDialogID = messageSent.createMessage.dialogId;
+    const completion = streamText({
+        model: openrouter(
+            `${process.env.MODEL || "meta-llama/llama-3.1-405b-instruct:free"}`
+        ),
+        system: "You are a helpful assistant.",
+        messages,
+        // async onFinish({ text, toolCalls, toolResults, usage, finishReason }) {
+        //     // implement your own storage logic:
+        //     let retrieve = await fetch(
+        //         `${process.env.NEXT_PUBLIC_BASE_URL}/api/chat/${newDialogID}`,
+        //         {
+        //             method: "POST",
+        //             headers: {
+        //                 "Content-Type": "application/json",
+        //             },
+        //             body: JSON.stringify({
+        //                 userID: session?.user?.id,
+        //                 message: text,
+        //                 isAI: true,
+        //                 dialogID: newDialogID ?? "",
+        //             }),
+        //         }
+        //     );
+        //     if (!dialogID) {
+        //         window.history.pushState({}, "", `/chat/${newDialogID}`);
+        //     }
+        // },
+    });
+    return completion.toDataStreamResponse();
 }

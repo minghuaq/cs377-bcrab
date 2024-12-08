@@ -2,13 +2,14 @@
 
 import { useEffect, useRef, useState } from "react";
 import ChatBubble from "./chatbubble";
+import { Message } from "ai";
 
 export default function ChatDialog(props: {
     dialogID: string;
-    conversation: message[];
+    conversation: Message[];
 }) {
     const dialogID = props.dialogID;
-    const [chatData, setChatData] = useState<message[]>();
+    const [chatData, setChatData] = useState<Message[]>();
 
     const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
@@ -29,19 +30,19 @@ export default function ChatDialog(props: {
         <div className="flex flex-col h-full w-full items-center overflow-y-auto">
             <div className="flex flex-col h-full w-full max-w-3xl gap-2">
                 {chatData?.map((message) => (
-                    <div key={message.messageID}>
+                    <div key={message.id}>
                         <ChatBubble
-                            isAI={message.isAI}
-                            message={message.message}
+                            isAI={message.role == "assistant" ? true : false}
+                            message={message.content}
                         />
                     </div>
                 ))}
 
                 {props.conversation?.map((message) => (
-                    <div key={message.messageID}>
+                    <div key={message.id}>
                         <ChatBubble
-                            isAI={message.isAI}
-                            message={message.message}
+                            isAI={message.role == "assistant" ? true : false}
+                            message={message.content}
                         />
                     </div>
                 ))}

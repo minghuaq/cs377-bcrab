@@ -117,7 +117,7 @@ export default function SidebarDemo({
 export const Logo = () => {
     return (
         <Link
-            href="/"
+            href="/chat"
             className="font-normal flex space-x-2 items-center text-sm text-black py-1 relative z-20"
         >
             <img

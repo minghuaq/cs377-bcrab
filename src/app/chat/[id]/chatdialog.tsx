@@ -9,7 +9,7 @@ export default function ChatDialog(props: {
     conversation: Message[];
 }) {
     const dialogID = props.dialogID;
-    const [chatData, setChatData] = useState<Message[]>();
+    const [chatData, setChatData] = useState<message[]>();
 
     const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
@@ -30,10 +30,10 @@ export default function ChatDialog(props: {
         <div className="flex flex-col h-full w-full items-center overflow-y-auto">
             <div className="flex flex-col h-full w-full max-w-3xl gap-2">
                 {chatData?.map((message) => (
-                    <div key={message.id}>
+                    <div key={message.messageID}>
                         <ChatBubble
-                            isAI={message.role == "assistant" ? true : false}
-                            message={message.content}
+                            isAI={message.isAI}
+                            message={message.message}
                         />
                     </div>
                 ))}

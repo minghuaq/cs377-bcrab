@@ -3,6 +3,7 @@ import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { ChatRequestOptions, CoreMessage, streamText } from "ai";
 import { NextRequest } from "next/server";
 import OpenAI from "openai";
+import { addMessage } from "./[id]/route";
 
 const openai = new OpenAI({
     baseURL: "https://openrouter.ai/api/v1",
@@ -17,64 +18,42 @@ const openrouter = createOpenRouter({
 });
 export const maxDuration = 30;
 
-export const config = {
-    runtime: "edge",
-};
+// export const runtime = "edge";
+
+const saveMessage = (message: string) => {};
 export async function POST(request: NextRequest) {
     const {
         messages,
-        options,
-    }: { messages: CoreMessage[]; options: ChatRequestOptions } =
-        await request.json();
-    const dialogID = options;
-    console.log(dialogID);
+        dialogID,
+    }: { messages: CoreMessage[]; dialogID: string } = await request.json();
     const newMessage = messages[messages.length - 1];
     const session = await auth();
-
-    // let send = await fetch(
-    //     `${process.env.NEXT_PUBLIC_BASE_URL}/api/chat/${dialogID}`,
-    //     {
-    //         method: "POST",
-    //         headers: {
-    //             "Content-Type": "application/json",
-    //         },
-    //         body: JSON.stringify({
-    //             userID: session?.user?.id,
-    //             message: newMessage.content,
-    //             isAI: false,
-    //             dialogID: dialogID ?? "",
-    //         }),
-    //     }
-    // );
-    // let messageSent = await send.json();
-    // let newDialogID = messageSent.createMessage.dialogId;
+    let send = await addMessage(
+        newMessage.content.toString(),
+        dialogID ?? "",
+        false
+    );
+    let messageSent = send;
+    let newDialogID = messageSent?.dialogId;
+    console.log(newDialogID);
     const completion = streamText({
         model: openrouter(
             `${process.env.MODEL || "meta-llama/llama-3.1-405b-instruct:free"}`
         ),
         system: "You are a helpful assistant.",
         messages,
-        // async onFinish({ text, toolCalls, toolResults, usage, finishReason }) {
-        //     // implement your own storage logic:
-        //     let retrieve = await fetch(
-        //         `${process.env.NEXT_PUBLIC_BASE_URL}/api/chat/${newDialogID}`,
-        //         {
-        //             method: "POST",
-        //             headers: {
-        //                 "Content-Type": "application/json",
-        //             },
-        //             body: JSON.stringify({
-        //                 userID: session?.user?.id,
-        //                 message: text,
-        //                 isAI: true,
-        //                 dialogID: newDialogID ?? "",
-        //             }),
-        //         }
-        //     );
-        //     if (!dialogID) {
-        //         window.history.pushState({}, "", `/chat/${newDialogID}`);
-        //     }
-        // },
+        async onFinish({ text, toolCalls, toolResults, usage, finishReason }) {
+            // implement your own storage logic:
+            let retrieve = await addMessage(
+                text,
+                dialogID ?? "",
+                true
+            )
+            // TODO: Fix redirecting
+            // if (!dialogID) {
+            //     window.history.pushState({}, "", `/chat/${newDialogID}`);
+            // }
+        },
     });
     return completion.toDataStreamResponse();
 }

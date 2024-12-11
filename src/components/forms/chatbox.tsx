@@ -10,56 +10,19 @@ type chatboxProps = {
     setDialogID?: React.Dispatch<React.SetStateAction<string | null>>;
 };
 
-// async function sendRequest(dialogID: string) {
-//     try {
-//         let message = await fetch(
-//             `${process.env.NEXT_PUBLIC_BASE_URL}/api/chat/${dialogID}`,
-//             {
-//                 method: "GET",
-//                 headers: {
-//                     "Content-Type": "application/json",
-//                 },
-//             }
-//         );
-//         let messagejson = await message.json();
-//         let messagelist = messagejson.messages;
-
-//         let data = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/chat`, {
-//             method: "POST",
-//             headers: {
-//                 "Content-Type": "application/json",
-//             },
-//             body: JSON.stringify({ messagelist }),
-//         });
-
-//         if (!data.ok) {
-//             throw new Error(`Error: ${data.status} ${data.statusText}`);
-//         }
-//         let response = await data.json();
-//         if (response.product.error?.code == 429) {
-//             return {
-//                 message:
-//                     "You’ve reached our limit of messages per minute. Please try again later",
-//             };
-//         }
-
-//         return { message: response.product.choices[0].delta?.content };
-//     } catch (err) {
-//         if (err instanceof Error) {
-//             return { message: err.message };
-//         } else {
-//             return { message: "An unexpected error occurred" };
-//         }
-//     }
-// }
-
 export default function Chatbox(props: chatboxProps) {
     const chatref = useRef<HTMLParagraphElement>(null);
     const pathname = usePathname();
     const parts = pathname.split("/");
     const lastPart = parts[parts.length - 1];
     const dialogID = lastPart == "chat" ? null : lastPart;
-    const { messages, input, isLoading, setInput, append } = useChat();
+    const { messages, input, isLoading, setInput, append, data } = useChat({
+        // onFinish: () => {
+        //     if (!dialogID) {
+        //         window.history.pushState({}, "", `/chat/${}`);
+        //     }
+        // },
+    });
 
     async function handleSubmit() {
         if (!chatref.current || chatref.current.innerHTML == "") return;
@@ -76,6 +39,7 @@ export default function Chatbox(props: chatboxProps) {
                 },
             }
         );
+        props.setDialogID?.("a");
         setInput("");
     }
     useEffect(() => {

@@ -1,36 +1,31 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
-import { auth } from "@/auth"
+import { auth } from "@/auth";
+import { AssistantContent, CoreMessage, CoreSystemMessage, Message, ToolContent, UserContent } from "ai";
 
 const prisma = new PrismaClient();
-
-export async function POST(
-    request: NextRequest,
+export async function addMessage(
+    message: string,
+    dialogID: string,
+    isAI: boolean
 ) {
-    const session = await auth()
-
-    const userEmail = session?.user?.email
-
+    const session = await auth();
+    const userEmail = session?.user?.email;
     if (!userEmail) {
-        return NextResponse.json({}, { status: 401 })
+        // TODO:Send the right thing maybe?
+        return;
     }
-
     const user = await prisma.user.findUnique({
         where: {
             email: userEmail,
         },
-    })
-
+    });
     // user would exist if logged in
     if (!user) {
-        return NextResponse.json({}, { status: 401 })
+        // TODO:Send the right thing maybe?
+        return;
     }
-
-    const data = await request.json();
-    const dialogID = data.dialogID;
     const userID = user.id;
-    const message = data.message;
-    const isAI = data.isAI;
 
     const timestamp = new Date().toISOString();
 
@@ -45,10 +40,10 @@ export async function POST(
                         user: {
                             connectOrCreate: {
                                 create: {
-                                    email: userEmail
+                                    email: userEmail,
                                 },
                                 where: {
-                                    email: userEmail
+                                    email: userEmail,
                                 },
                             },
                         },
@@ -67,7 +62,14 @@ export async function POST(
             messageID: true,
         },
     });
-
+    return createMessage;
+}
+export async function POST(request: NextRequest) {
+    const data = await request.json();
+    const message = data.message;
+    const dialogID = data.dialogID;
+    const isAI = data.isAI;
+    const createMessage = await addMessage(message, dialogID, isAI);
     return Response.json({ createMessage });
 }
 

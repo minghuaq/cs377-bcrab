@@ -14,11 +14,11 @@ datasource db {
 }
 
 model Dialog {
-  id        String    @default(uuid()) // dialogID
-  userId    String
-  user      User      @relation(fields: [userId], references: [id])
-  timestamp DateTime  @default(now())
-  messages  Message[]
+  id         String    @default(uuid()) // dialogID
+  userId     String
+  user       User      @relation(fields: [userId], references: [id])
+  timestamp  DateTime  @default(now())
+  messages   Message[]
 
   @@id([userId, id]) // Composite primary key
 }

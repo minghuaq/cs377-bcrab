@@ -1,136 +1,94 @@
 // import { sendRequest } from "@/app/chat/actions";
-import { redirect, usePathname, useRouter } from "next/navigation";
-import { useRef } from "react";
+import { CoreMessage } from "ai";
+import { Message, useChat } from "ai/react";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { v4 } from "uuid";
 import SubmitButton from "../ui/submitbutton";
 import { TextBox } from "../ui/textbox";
-import { revalidatePath } from "next/cache";
-import { METHODS } from "http";
 
 type chatboxProps = {
-    setConversation?: React.Dispatch<React.SetStateAction<message[]>>;
-    setDialogID?: React.Dispatch<React.SetStateAction<string | null>>;
+    chatData?: message[];
+    setConversation?: React.Dispatch<React.SetStateAction<Message[]>>;
 };
-
-async function sendRequest(dialogID: string) {
-    try {
-        let message = await fetch(
-            `${process.env.NEXT_PUBLIC_BASE_URL}/api/chat/${dialogID}`,
-            {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-            }
-        );
-        let messagejson = await message.json();
-        let messagelist = messagejson.messages;
-        console.log("a:", messagelist);
-        let data = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/chat`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ messagelist }),
-        });
-
-        if (!data.ok) {
-            throw new Error(`Error: ${data.status} ${data.statusText}`);
-        }
-
-        let response = await data.json();
-        if (response.product.error?.code == 429) {
-            return {
-                message:
-                    "You’ve reached our limit of messages per minute. Please try again later",
-            };
-        }
-
-        return { message: response.product.choices[0].message.content };
-    } catch (err) {
-        if (err instanceof Error) {
-            return { message: err.message };
-        } else {
-            return { message: "An unexpected error occurred" };
-        }
-    }
-}
 
 export default function Chatbox(props: chatboxProps) {
     const chatref = useRef<HTMLParagraphElement>(null);
-    const userId = "test";
-
     const pathname = usePathname();
     const parts = pathname.split("/");
     const lastPart = parts[parts.length - 1];
-    const dialogID = lastPart == "chat" ? null : lastPart;
-    async function handleSubmit() {
-        if (!chatref.current) return;
-        const message = chatref.current.textContent?.toString();
-        if (!message) return;
-
-        chatref.current.innerHTML = "";
-        let send = await fetch(
-            `${process.env.NEXT_PUBLIC_BASE_URL}/api/chat/${dialogID}`,
-            {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    userID: userId,
-                    message: message,
-                    isAI: false,
-                    dialogID: dialogID ?? "",
-                }),
-            }
-        );
-        let messageSent = await send.json();
-        let newDialogID = messageSent.createMessage.dialogId;
-        if (!dialogID) {
-            window.history.pushState({}, "", `/chat/${newDialogID}`);
-            props.setDialogID?.(newDialogID);
-        } else {
-            props.setConversation?.((prev) => {
-                return [
-                    ...prev,
-                    {
-                        messageID: messageSent.createMessage.messageID,
-                        message: message,
-                        isAI: false,
-                    },
-                ];
+    const [initMessage, setInitMessage] = useState<CoreMessage[]>();
+    useEffect(() => {
+        if (props.chatData) {
+            const messageToAI: CoreMessage[] = props.chatData.map((message) => {
+                return {
+                    role: message.isAI ? "assistant" : "user",
+                    content: message.message,
+                };
             });
+            setInitMessage(messageToAI);
         }
+    }, [props.chatData]);
+    let dialogID = lastPart == "chat" ? null : lastPart;
+    const { messages, input, isLoading, setInput, append } = useChat({
+        experimental_throttle: 500, // To avoid maximum update depth exceeded
+    });
+    const router = useRouter();
 
-        const response = await sendRequest(newDialogID);
-        let retrieve = await fetch(
-            `${process.env.NEXT_PUBLIC_BASE_URL}/api/chat/${newDialogID}`,
-            {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    userID: userId,
-                    message: response.message,
-                    isAI: true,
-                    dialogID: newDialogID,
-                }),
-            }
-        );
-        let messageReceived = await retrieve.json();
-        props.setConversation?.((prev) => {
-            return [
-                ...prev,
+    useEffect(() => {
+        if (localStorage.getItem("initMessage")) {
+            // TODO: Maybe we don't need this, try to reuse handleSubmit.
+            append(
                 {
-                    messageID: messageReceived.createMessage.messageID,
-                    message: response.message,
-                    isAI: true,
+                    content: localStorage.getItem("initMessage") as string,
+                    role: "user",
                 },
-            ];
-        });
+                {
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: {
+                        dialogID: dialogID,
+                    },
+                }
+            );
+            setInput("");
+            localStorage.removeItem("initMessage");
+        }
+    }, [pathname]);
+
+    function onFirstMessage(message: string) {
+        localStorage.setItem("initMessage", message);
+        const newDialogID = v4();
+        dialogID = newDialogID;
+        router.push(`chat/${dialogID}`);
     }
 
+    function handleSubmit() {
+        if (!chatref.current || chatref.current.innerHTML == "") return;
+        chatref.current.innerHTML = "";
+        if (!dialogID) {
+            onFirstMessage(input);
+            return;
+        }
+        append(
+            { content: input, role: "user" },
+            {
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: {
+                    dialogID: dialogID,
+                    initMessage: initMessage,
+                },
+            }
+        );
+        setInput("");
+    }
+    useEffect(() => {
+        props.setConversation?.(messages);
+    }, [messages]);
+    // TODO: Change contentEditable to work on Firefox
     return (
         <form
             className="flex flex-row gap-2 items-end px-10 py-2 items-center w-full h-fit max-w-3xl"
@@ -142,7 +100,7 @@ export default function Chatbox(props: chatboxProps) {
                 onKeyDown={async (e) => {
                     if (e.key === "Enter" && e.shiftKey === false) {
                         e.preventDefault();
-                        document.getElementById("submitButton")?.click();
+                        document.getElementById("chatSubmitButton")?.click();
                     }
                 }}
             >
@@ -162,10 +120,11 @@ export default function Chatbox(props: chatboxProps) {
                         ) {
                             element.innerHTML = "";
                         }
+                        setInput(element?.textContent ?? "");
                     }}
                 ></p>
             </TextBox>
-            <SubmitButton id="submitButton" />
+            <SubmitButton isLoading={isLoading} id="chatSubmitButton" />
         </form>
     );
 }

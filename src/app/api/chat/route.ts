@@ -1,77 +1,54 @@
+import { createOpenRouter } from "@openrouter/ai-sdk-provider";
+import { PrismaClient } from "@prisma/client";
+import { CoreMessage, streamText } from "ai";
 import { NextRequest } from "next/server";
-type TextContent = {
-    type: "text";
-    text: string;
-};
+import OpenAI from "openai";
+import { addMessage } from "../prismaCalls";
 
-type ImageContentPart = {
-    type: "image_url";
-    image_url: {
-        url: string; // URL or base64 encoded image data
-        detail?: string; // Optional, defaults to 'auto'
-    };
-};
-type ContentPart = TextContent | ImageContentPart;
-type Message =
-    | {
-          role: "user" | "assistant" | "system";
-          // ContentParts are only for the 'user' role:
-          content: string | ContentPart[];
-          // If "name" is included, it will be prepended like this
-          // for non-OpenAI models: `{name}: {content}`
-          name?: string;
-      }
-    | {
-          role: "tool";
-          content: string;
-          tool_call_id: string;
-          name?: string;
-      };
+const prisma = new PrismaClient();
+
+const openai = new OpenAI({
+    baseURL: "https://openrouter.ai/api/v1",
+    apiKey: process.env.API_KEY,
+    defaultHeaders: {
+        // "HTTP-Referer": $YOUR_SITE_URL, // Optional, for including your app on openrouter.ai rankings.
+        // "X-Title": $YOUR_APP_NAME, // Optional. Shows in rankings on openrouter.ai.
+    },
+});
+const openrouter = createOpenRouter({
+    apiKey: process.env.API_KEY,
+});
+export const maxDuration = 30;
+
+// export const runtime = "edge";
 export async function POST(request: NextRequest) {
-    const data = await request.json();
-    const userMessage = data.messagelist;
-    // Disable for now
-    // const searchParams = request.nextUrl.searchParams
-
-    // const userMessage = searchParams.get('user')
-    // TODO: Message Sanitization.
-    let messages: Message[] = [
-        {
-            role: "system",
-            content: "",
+    const {
+        messages,
+        dialogID,
+        initMessage = [],
+    }: {
+        messages: CoreMessage[];
+        dialogID: string;
+        initMessage: CoreMessage[];
+    } = await request.json();
+    const newMessage = messages[messages.length - 1];
+    initMessage?.push(...messages);
+    console.log(initMessage)
+    const completion = streamText({
+        model: openrouter(
+            `${process.env.MODEL || "meta-llama/llama-3.1-405b-instruct:free"}`
+        ),
+        system: "You are a helpful assistant.",
+        messages: initMessage,
+        maxTokens: 2048,
+        async onFinish({ text, toolCalls, toolResults, usage, finishReason }) {
+            let send = await addMessage(
+                newMessage.content.toString(),
+                dialogID,
+                false
+            );
+            let retrieve = await addMessage(text, dialogID, true);
         },
-    ];
-    const newMessages = userMessage.map(
-        (msg: { isAI: boolean; message: string }) => ({
-            role: msg.isAI ? "assistent" : "user",
-            content: msg.message,
-            // name: "",
-        })
-    );
-    messages = [...messages, ...newMessages];
-    const res = await fetch(
-        `${
-            process.env.API_PATH ||
-            "https://openrouter.ai/api/v1/chat/completions"
-        }`,
-        {
-            method: "POST",
-            headers: {
-                Authorization: `Bearer ${process.env.API_KEY}`,
-                //   "HTTP-Referer": `${YOUR_SITE_URL}`, // Optional, for including your app on openrouter.ai rankings.
-                //   "X-Title": `${YOUR_SITE_NAME}`, // Optional. Shows in rankings on openrouter.ai.
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                model: `${
-                    process.env.MODEL ||
-                    "meta-llama/llama-3.1-405b-instruct:free"
-                }`,
-                messages: messages
-                // stream: true,
-            }),
-        }
-    );
-    const product = await res.json();
-    return Response.json({ product });
+    });
+    return completion.toDataStreamResponse();
 }

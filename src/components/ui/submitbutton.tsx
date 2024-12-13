@@ -4,6 +4,7 @@ import { Button } from "./button";
 
 type submitButtonProps = {
     id: string;
+    isLoading?: boolean;
 };
 export default function SubmitButton(props: submitButtonProps) {
     const status = useFormStatus()
@@ -12,7 +13,7 @@ export default function SubmitButton(props: submitButtonProps) {
             id={props.id}
             className="h-14 w-14 rounded-2xl"
             type="submit"
-            disabled={status.pending}
+            disabled={status.pending || props.isLoading}
         >
             <svg
                 fill="#000000"

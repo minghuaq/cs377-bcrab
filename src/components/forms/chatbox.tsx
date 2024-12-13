@@ -57,14 +57,18 @@ export default function Chatbox(props: chatboxProps) {
         }
     }, [pathname]);
 
+    function onFirstMessage(message: string) {
+        localStorage.setItem("initMessage", message);
+        const newDialogID = v4();
+        dialogID = newDialogID;
+        router.push(`chat/${dialogID}`);
+    }
+
     function handleSubmit() {
         if (!chatref.current || chatref.current.innerHTML == "") return;
         chatref.current.innerHTML = "";
         if (!dialogID) {
-            localStorage.setItem("initMessage", input);
-            const newDialogID = v4();
-            dialogID = newDialogID;
-            router.push(`chat/${dialogID}`);
+            onFirstMessage(input);
             return;
         }
         append(
@@ -84,6 +88,7 @@ export default function Chatbox(props: chatboxProps) {
     useEffect(() => {
         props.setConversation?.(messages);
     }, [messages]);
+    // TODO: Change contentEditable to work on Firefox
     return (
         <form
             className="flex flex-row gap-2 items-end px-10 py-2 items-center w-full h-fit max-w-3xl"

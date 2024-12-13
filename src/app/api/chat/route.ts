@@ -1,11 +1,9 @@
-import { auth } from "@/auth";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
-import { ChatRequestOptions, CoreMessage, streamText } from "ai";
+import { PrismaClient } from "@prisma/client";
+import { CoreMessage, streamText } from "ai";
 import { NextRequest } from "next/server";
 import OpenAI from "openai";
-import { redirect } from "next/navigation";
 import { addMessage } from "../prismaCalls";
-import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -42,7 +40,7 @@ export async function POST(request: NextRequest) {
         ),
         system: "You are a helpful assistant.",
         messages: initMessage,
-        maxTokens: 1028,
+        maxTokens: 2048,
         async onFinish({ text, toolCalls, toolResults, usage, finishReason }) {
             let send = await addMessage(
                 newMessage.content.toString(),

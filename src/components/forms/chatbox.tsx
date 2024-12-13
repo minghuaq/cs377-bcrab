@@ -1,11 +1,11 @@
 // import { sendRequest } from "@/app/chat/actions";
-import { redirect, usePathname, useRouter } from "next/navigation";
+import { CoreMessage } from "ai";
+import { Message, useChat } from "ai/react";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { v4 } from "uuid";
 import SubmitButton from "../ui/submitbutton";
 import { TextBox } from "../ui/textbox";
-import { Message, useChat } from "ai/react";
-import { v4 } from "uuid";
-import { CoreMessage } from "ai";
 
 type chatboxProps = {
     chatData?: message[];
@@ -30,7 +30,9 @@ export default function Chatbox(props: chatboxProps) {
         }
     }, [props.chatData]);
     let dialogID = lastPart == "chat" ? null : lastPart;
-    const { messages, input, isLoading, setInput, append } = useChat();
+    const { messages, input, isLoading, setInput, append } = useChat({
+        experimental_throttle: 500, // To avoid maximum update depth exceeded
+    });
     const router = useRouter();
 
     useEffect(() => {
@@ -54,7 +56,7 @@ export default function Chatbox(props: chatboxProps) {
             localStorage.removeItem("initMessage");
         }
     }, [pathname]);
-    
+
     function handleSubmit() {
         if (!chatref.current || chatref.current.innerHTML == "") return;
         chatref.current.innerHTML = "";

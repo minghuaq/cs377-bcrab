@@ -3,7 +3,11 @@ import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { ChatRequestOptions, CoreMessage, streamText } from "ai";
 import { NextRequest } from "next/server";
 import OpenAI from "openai";
-import { addMessage } from "./[id]/route";
+import { redirect } from "next/navigation";
+import { addMessage } from "../prismaCalls";
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
 
 const openai = new OpenAI({
     baseURL: "https://openrouter.ai/api/v1",
@@ -19,40 +23,32 @@ const openrouter = createOpenRouter({
 export const maxDuration = 30;
 
 // export const runtime = "edge";
-
-const saveMessage = (message: string) => {};
 export async function POST(request: NextRequest) {
     const {
         messages,
         dialogID,
-    }: { messages: CoreMessage[]; dialogID: string } = await request.json();
+        initMessage,
+    }: {
+        messages: CoreMessage[];
+        dialogID: string;
+        initMessage: CoreMessage[];
+    } = await request.json();
     const newMessage = messages[messages.length - 1];
-    const session = await auth();
-    let send = await addMessage(
-        newMessage.content.toString(),
-        dialogID ?? "",
-        false
-    );
-    let messageSent = send;
-    let newDialogID = messageSent?.dialogId;
-    console.log(newDialogID);
+    initMessage.push(...messages);
+    console.log(initMessage)
     const completion = streamText({
         model: openrouter(
             `${process.env.MODEL || "meta-llama/llama-3.1-405b-instruct:free"}`
         ),
         system: "You are a helpful assistant.",
-        messages,
+        messages: initMessage,
         async onFinish({ text, toolCalls, toolResults, usage, finishReason }) {
-            // implement your own storage logic:
-            let retrieve = await addMessage(
-                text,
-                dialogID ?? "",
-                true
-            )
-            // TODO: Fix redirecting
-            // if (!dialogID) {
-            //     window.history.pushState({}, "", `/chat/${newDialogID}`);
-            // }
+            let send = await addMessage(
+                newMessage.content.toString(),
+                dialogID,
+                false
+            );
+            let retrieve = await addMessage(text, dialogID, true);
         },
     });
     return completion.toDataStreamResponse();

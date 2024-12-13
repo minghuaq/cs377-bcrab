@@ -1,13 +1,15 @@
 // import { sendRequest } from "@/app/chat/actions";
 import { redirect, usePathname, useRouter } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import SubmitButton from "../ui/submitbutton";
 import { TextBox } from "../ui/textbox";
 import { Message, useChat } from "ai/react";
+import { v4 } from "uuid";
+import { CoreMessage } from "ai";
 
 type chatboxProps = {
+    chatData?: message[];
     setConversation?: React.Dispatch<React.SetStateAction<Message[]>>;
-    setDialogID?: React.Dispatch<React.SetStateAction<string | null>>;
 };
 
 export default function Chatbox(props: chatboxProps) {
@@ -15,19 +17,50 @@ export default function Chatbox(props: chatboxProps) {
     const pathname = usePathname();
     const parts = pathname.split("/");
     const lastPart = parts[parts.length - 1];
-    const dialogID = lastPart == "chat" ? null : lastPart;
-    const { messages, input, isLoading, setInput, append, data } = useChat({
-        // onFinish: () => {
-        //     if (!dialogID) {
-        //         window.history.pushState({}, "", `/chat/${}`);
-        //     }
-        // },
-    });
+    const [initMessage, setInitMessage] = useState<CoreMessage[]>();
+    useEffect(() => {
+        if (props.chatData) {
+            const messageToAI: CoreMessage[] = props.chatData.map((message) => {
+                return {
+                    role: message.isAI ? "assistant" : "user",
+                    content: message.message,
+                };
+            });
+            setInitMessage(messageToAI);
+        }
+    }, [props.chatData]);
+    let dialogID = lastPart == "chat" ? null : lastPart;
+    const { messages, input, isLoading, setInput, append } = useChat();
+    const router = useRouter();
 
+    // useEffect(() => {
+    //     console.log(localStorage.getItem("initMessage"));
+    //     if (localStorage.getItem("initMessage")) {
+    //         setInput(localStorage.getItem("initMessage") as string);
+    //         append(
+    //             { content: input, role: "user" },
+    //             {
+    //                 headers: {
+    //                     "Content-Type": "application/json",
+    //                 },
+    //                 body: {
+    //                     dialogID: dialogID,
+    //                 },
+    //             }
+    //         );
+    //         setInput("");
+    //         localStorage.removeItem("initMessage")
+    //     }
+    // }, [pathname]);
     async function handleSubmit() {
         if (!chatref.current || chatref.current.innerHTML == "") return;
         chatref.current.innerHTML = "";
-
+        if (!dialogID) {
+            const newDialogID = v4();
+            dialogID = newDialogID;
+            router.push(`chat/${dialogID}`);
+            return;
+        }
         append(
             { content: input, role: "user" },
             {
@@ -36,13 +69,14 @@ export default function Chatbox(props: chatboxProps) {
                 },
                 body: {
                     dialogID: dialogID,
+                    initMessage: initMessage,
                 },
             }
         );
-        props.setDialogID?.("a");
         setInput("");
     }
     useEffect(() => {
+        console.log(messages);
         props.setConversation?.(messages);
     }, [messages]);
     return (

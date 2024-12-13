@@ -33,29 +33,33 @@ export default function Chatbox(props: chatboxProps) {
     const { messages, input, isLoading, setInput, append } = useChat();
     const router = useRouter();
 
-    // useEffect(() => {
-    //     console.log(localStorage.getItem("initMessage"));
-    //     if (localStorage.getItem("initMessage")) {
-    //         setInput(localStorage.getItem("initMessage") as string);
-    //         append(
-    //             { content: input, role: "user" },
-    //             {
-    //                 headers: {
-    //                     "Content-Type": "application/json",
-    //                 },
-    //                 body: {
-    //                     dialogID: dialogID,
-    //                 },
-    //             }
-    //         );
-    //         setInput("");
-    //         localStorage.removeItem("initMessage")
-    //     }
-    // }, [pathname]);
-    async function handleSubmit() {
+    useEffect(() => {
+        if (localStorage.getItem("initMessage")) {
+            // TODO: Maybe we don't need this, try to reuse handleSubmit.
+            append(
+                {
+                    content: localStorage.getItem("initMessage") as string,
+                    role: "user",
+                },
+                {
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: {
+                        dialogID: dialogID,
+                    },
+                }
+            );
+            setInput("");
+            localStorage.removeItem("initMessage");
+        }
+    }, [pathname]);
+    
+    function handleSubmit() {
         if (!chatref.current || chatref.current.innerHTML == "") return;
         chatref.current.innerHTML = "";
         if (!dialogID) {
+            localStorage.setItem("initMessage", input);
             const newDialogID = v4();
             dialogID = newDialogID;
             router.push(`chat/${dialogID}`);
@@ -76,7 +80,6 @@ export default function Chatbox(props: chatboxProps) {
         setInput("");
     }
     useEffect(() => {
-        console.log(messages);
         props.setConversation?.(messages);
     }, [messages]);
     return (

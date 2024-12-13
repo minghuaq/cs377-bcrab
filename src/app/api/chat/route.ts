@@ -27,14 +27,14 @@ export async function POST(request: NextRequest) {
     const {
         messages,
         dialogID,
-        initMessage,
+        initMessage = [],
     }: {
         messages: CoreMessage[];
         dialogID: string;
         initMessage: CoreMessage[];
     } = await request.json();
     const newMessage = messages[messages.length - 1];
-    initMessage.push(...messages);
+    initMessage?.push(...messages);
     console.log(initMessage)
     const completion = streamText({
         model: openrouter(
@@ -42,6 +42,7 @@ export async function POST(request: NextRequest) {
         ),
         system: "You are a helpful assistant.",
         messages: initMessage,
+        maxTokens: 1028,
         async onFinish({ text, toolCalls, toolResults, usage, finishReason }) {
             let send = await addMessage(
                 newMessage.content.toString(),

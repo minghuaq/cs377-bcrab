@@ -1,8 +1,8 @@
 "use client";
 import Chatbox from "@/components/forms/chatbox";
-import ChatDialog from "./chatdialog";
-import { useEffect, useRef, useState } from "react";
 import { Message } from "ai";
+import { useEffect, useState } from "react";
+import ChatDialog from "./chatdialog";
 
 export default function ChatConversation({
     params,

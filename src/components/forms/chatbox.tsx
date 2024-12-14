@@ -2,10 +2,11 @@
 import { CoreMessage } from "ai";
 import { Message, useChat } from "ai/react";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { v4 } from "uuid";
 import SubmitButton from "../ui/submitbutton";
 import { TextBox } from "../ui/textbox";
+import { chatHistoryContext } from "@/app/chat/layout";
 
 type chatboxProps = {
     chatData?: message[];
@@ -18,6 +19,8 @@ export default function Chatbox(props: chatboxProps) {
     const parts = pathname.split("/");
     const lastPart = parts[parts.length - 1];
     const [initMessage, setInitMessage] = useState<CoreMessage[]>();
+    const { setCreateDialog } = useContext(chatHistoryContext);
+    const router = useRouter();
     useEffect(() => {
         if (props.chatData) {
             const messageToAI: CoreMessage[] = props.chatData.map((message) => {
@@ -32,9 +35,12 @@ export default function Chatbox(props: chatboxProps) {
     let dialogID = lastPart == "chat" ? null : lastPart;
     const { messages, input, isLoading, setInput, append } = useChat({
         experimental_throttle: 500, // To avoid maximum update depth exceeded
+        onFinish: () => {
+            setCreateDialog((createDialog) => {
+                return !createDialog;
+            });
+        },
     });
-    const router = useRouter();
-
     useEffect(() => {
         if (localStorage.getItem("initMessage")) {
             // TODO: Maybe we don't need this, try to reuse handleSubmit.

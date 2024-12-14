@@ -1,8 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
+import { addMessage } from "@/app/utils/prismaCalls";
 import { PrismaClient } from "@prisma/client";
-import { auth } from "@/auth";
-import { AssistantContent, CoreMessage, CoreSystemMessage, Message, ToolContent, UserContent } from "ai";
-import { addMessage } from "../../prismaCalls";
+import { NextRequest } from "next/server";
 
 const prisma = new PrismaClient();
 
@@ -11,6 +9,7 @@ export async function POST(request: NextRequest) {
     const message = data.message;
     const dialogID = data.dialogID;
     const isAI = data.isAI;
+    console.log("posting message")
     const createMessage = await addMessage(message, dialogID, isAI);
     return Response.json({ createMessage });
 }

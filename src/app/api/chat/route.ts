@@ -3,7 +3,7 @@ import { PrismaClient } from "@prisma/client";
 import { CoreMessage, streamText } from "ai";
 import { NextRequest } from "next/server";
 import OpenAI from "openai";
-import { addMessage } from "../prismaCalls";
+import { addMessage } from "@/app/utils/prismaCalls";
 
 const prisma = new PrismaClient();
 
@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
     } = await request.json();
     const newMessage = messages[messages.length - 1];
     initMessage?.push(...messages);
-    console.log(initMessage)
+    console.log(initMessage);
     const completion = streamText({
         model: openrouter(
             `${process.env.MODEL || "meta-llama/llama-3.1-405b-instruct:free"}`
@@ -41,12 +41,16 @@ export async function POST(request: NextRequest) {
         system: "You are a helpful assistant.",
         messages: initMessage,
         maxTokens: 2048,
+        async onStepFinish({ stepType }) {
+            if (stepType == "initial") {
+                let send = await addMessage(
+                    newMessage.content.toString(),
+                    dialogID,
+                    false
+                );
+            }
+        },
         async onFinish({ text, toolCalls, toolResults, usage, finishReason }) {
-            let send = await addMessage(
-                newMessage.content.toString(),
-                dialogID,
-                false
-            );
             let retrieve = await addMessage(text, dialogID, true);
         },
     });

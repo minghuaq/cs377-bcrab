@@ -6,22 +6,30 @@ import { IconBrandHipchat } from "@tabler/icons-react";
 import { motion } from "framer-motion";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import React, { createContext, useEffect, useState } from "react";
 import { useFormStatus } from "react-dom";
+
 type sidebarListProps = {
     label: string;
     href: string;
     icon: React.JSX.Element | React.ReactNode;
 };
+
+type chatHistoryContextProps ={setCreateDialog: React.Dispatch<React.SetStateAction<boolean>>}
+export const chatHistoryContext = createContext<chatHistoryContextProps>({setCreateDialog: () => null});
 export default function SidebarDemo({
     children,
 }: Readonly<{
     children: React.ReactNode;
 }>) {
-    const status = useFormStatus()
+    const status = useFormStatus();
     const [links, setLinks] = useState<sidebarListProps[]>();
     const pathname = usePathname();
+    const [open, setOpen] = useState(false);
+    const [createDialog, setCreateDialog] = useState(false);
+    // Get user image
+    const { data: session } = useSession();
     useEffect(() => {
         async function fetchChat() {
             const chatListFetch = await fetch(
@@ -35,7 +43,11 @@ export default function SidebarDemo({
             );
             const chatList = await chatListFetch.json();
             const newLinks = chatList.chatHistory.map(
-                (chat: { id: string; userId: string; messages: Array<message> }) => ({
+                (chat: {
+                    id: string;
+                    userId: string;
+                    messages: Array<message>;
+                }) => ({
                     label: chat.messages[0].message,
                     href: `/chat/${chat.id}`,
                     icon: (
@@ -46,11 +58,7 @@ export default function SidebarDemo({
             setLinks(newLinks);
         }
         fetchChat();
-    }, [pathname]);
-    const [open, setOpen] = useState(false);
-
-    // Get user image
-    const { data: session } = useSession()
+    }, [createDialog]);
 
     return (
         <div
@@ -84,7 +92,10 @@ export default function SidebarDemo({
                         <div>
                             <div className="font-normal flex space-x-2 items-center text-sm text-black py-1 relative z-20">
                                 <img
-                                    src={ (session?.user?.image) ?? ("/images/crabdude.png")}
+                                    src={
+                                        session?.user?.image ??
+                                        "/images/crabdude.png"
+                                    }
                                     alt=""
                                     className="h-6 w-6 rounded-lg flex-shrink-0"
                                 />
@@ -101,7 +112,10 @@ export default function SidebarDemo({
                         <div>
                             <div className="font-normal flex space-x-2 items-center text-sm text-black py-1 relative z-20">
                                 <img
-                                    src={ (session?.user?.image) ?? ("/images/crabdude.png")}
+                                    src={
+                                        session?.user?.image ??
+                                        "/images/crabdude.png"
+                                    }
                                     alt=""
                                     className="h-6 w-6 rounded-lg flex-shrink-0"
                                 />
@@ -110,7 +124,11 @@ export default function SidebarDemo({
                     )}
                 </SidebarBody>
             </Sidebar>
-            <Dashboard>{children}</Dashboard>
+            <Dashboard>
+                <chatHistoryContext.Provider value={{setCreateDialog}}>
+                    {children}
+                </chatHistoryContext.Provider>
+            </Dashboard>
         </div>
     );
 }

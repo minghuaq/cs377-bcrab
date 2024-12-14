@@ -8,7 +8,6 @@ export default async function Home() {
     const session = await auth();
 
     let mainButton;
-
     if (!session) {
         mainButton = <SignIn />;
     } else {

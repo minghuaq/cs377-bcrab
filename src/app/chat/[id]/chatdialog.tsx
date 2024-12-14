@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import ChatBubble from "./chatbubble";
 import { Message } from "ai";
+import { useEffect, useRef } from "react";
+import ChatBubble from "./chatbubble";
 
 export default function ChatDialog(props: {
     chatData?: message[];

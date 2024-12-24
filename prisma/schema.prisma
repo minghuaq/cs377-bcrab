@@ -5,20 +5,22 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"] // Enable the postgresqlExtensions. Currently in preview
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [vector] // Add the pgvector extension
 }
 
 model Dialog {
-  id         String    @default(uuid()) // dialogID
-  userId     String
-  user       User      @relation(fields: [userId], references: [id])
-  timestamp  DateTime  @default(now())
-  messages   Message[]
+  id        String    @default(uuid()) // dialogID
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  timestamp DateTime  @default(now())
+  messages  Message[]
 
   @@id([userId, id]) // Composite primary key
 }
@@ -27,7 +29,7 @@ model Message {
   messageID Int     @default(autoincrement()) // messageID
   dialogId  String
   userId    String
-  dialog    Dialog  @relation(fields: [userId, dialogId], references: [userId, id])
+  dialog    Dialog  @relation(fields: [userId, dialogId], references: [userId, id], onDelete: Cascade)
   message   String
   isAI      Boolean
   timestamp String
@@ -48,6 +50,22 @@ model User {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Resources {
+  id         String       @id @default(cuid())
+  content    String
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  Embeddings Embeddings[]
+}
+
+model Embeddings {
+  id         String    @id @default(cuid())
+  resourceId String
+  resource   Resources @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  content    String
+  embedding  Unsupported("vector(1024)")?
 }
 
 // There can be multiple accounts per user

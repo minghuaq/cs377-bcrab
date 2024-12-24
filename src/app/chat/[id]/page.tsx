@@ -11,6 +11,7 @@ export default function ChatConversation({
 }) {
     const [conversation, setConversation] = useState<Message[]>([]);
     const [chatData, setChatData] = useState<message[]>();
+    const [isLoading, setIsLoading] = useState<boolean>(false);
     const dialogID = params.id;
 
     useEffect(() => {
@@ -23,8 +24,16 @@ export default function ChatConversation({
 
     return (
         <div className="flex flex-col gap-10 w-full h-full justify-between py-10 items-center">
-            <ChatDialog chatData={chatData} conversation={conversation} />
-            <Chatbox chatData={chatData} setConversation={setConversation} />
+            <ChatDialog
+                chatData={chatData}
+                conversation={conversation}
+                isLoading={isLoading}
+            />
+            <Chatbox
+                chatData={chatData}
+                setConversation={setConversation}
+                setIsLoading={setIsLoading}
+            />
         </div>
     );
 }

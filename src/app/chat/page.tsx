@@ -2,11 +2,8 @@
 import Chatbox from "@/components/forms/chatbox";
 import { TypewriterEffectSmooth } from "@/components/ui/typewriter-effect";
 import { useSession } from "next-auth/react";
-
 export default function Home() {
     const { data: session } = useSession();
-
-    console.log("RYAN!!!!!!!!")
     const words = [
         { text: "How" },
         { text: "can" },

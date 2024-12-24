@@ -16,8 +16,12 @@ type sidebarListProps = {
     icon: React.JSX.Element | React.ReactNode;
 };
 
-type chatHistoryContextProps ={setCreateDialog: React.Dispatch<React.SetStateAction<boolean>>}
-export const chatHistoryContext = createContext<chatHistoryContextProps>({setCreateDialog: () => null});
+type chatHistoryContextProps = {
+    setCreateDialog: React.Dispatch<React.SetStateAction<boolean>>;
+};
+export const chatHistoryContext = createContext<chatHistoryContextProps>({
+    setCreateDialog: () => null,
+});
 export default function SidebarDemo({
     children,
 }: Readonly<{
@@ -30,6 +34,7 @@ export default function SidebarDemo({
     const [createDialog, setCreateDialog] = useState(false);
     // Get user image
     const { data: session } = useSession();
+
     useEffect(() => {
         async function fetchChat() {
             const chatListFetch = await fetch(
@@ -42,24 +47,26 @@ export default function SidebarDemo({
                 }
             );
             const chatList = await chatListFetch.json();
-            const newLinks = chatList.chatHistory.map(
-                (chat: {
-                    id: string;
-                    userId: string;
-                    messages: Array<message>;
-                }) => ({
-                    label: chat.messages[0].message,
-                    href: `/chat/${chat.id}`,
-                    icon: (
-                        <IconBrandHipchat className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
-                    ),
-                })
-            );
-            setLinks(newLinks);
+            if (chatList.chatHistory) {
+                const newLinks = chatList.chatHistory.map(
+                    (chat: {
+                        id: string;
+                        userId: string;
+                        messages: Array<message>;
+                    }) => ({
+                        label: chat.messages[0].message,
+                        href: `/chat/${chat.id}`,
+                        icon: (
+                            <IconBrandHipchat className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+                        ),
+                    })
+                );
+                setLinks(newLinks);
+            }
         }
         fetchChat();
     }, [createDialog]);
-
+    // TODO: Turn this into a component
     return (
         <div
             className={cn(
@@ -125,7 +132,7 @@ export default function SidebarDemo({
                 </SidebarBody>
             </Sidebar>
             <Dashboard>
-                <chatHistoryContext.Provider value={{setCreateDialog}}>
+                <chatHistoryContext.Provider value={{ setCreateDialog }}>
                     {children}
                 </chatHistoryContext.Provider>
             </Dashboard>

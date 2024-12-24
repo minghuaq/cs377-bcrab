@@ -1,6 +1,7 @@
-import { PrismaClient } from "@prisma/client";
 import { auth } from "@/auth";
-import { AssistantContent, CoreMessage, CoreSystemMessage, Message, ToolContent, UserContent } from "ai";
+import { PrismaClient, Prisma } from "@prisma/client";
+import { createId } from '@paralleldrive/cuid2';
+import { generateEmbeddings } from "../ai/embedding";
 
 const prisma = new PrismaClient();
 export async function addMessage(
@@ -63,4 +64,30 @@ export async function addMessage(
         },
     });
     return createMessage;
+}
+
+export async function addResource(content: string) {
+    // TODO: Implement user explicit resource creation
+    // try {
+    const resource = await prisma.resources.create({
+        data: { content: content },
+        select: {
+            id: true,
+        },
+    });
+    const embeddings = await generateEmbeddings(content);
+    for (const embedding of embeddings) {
+        // const embeddingStr = `{${embedding.embedding.join(",")}}`;
+        await prisma.$executeRaw(
+            Prisma.sql`INSERT INTO "Embeddings" ("id", "resourceId", "content", "embedding") 
+                VALUES (${createId()}, ${resource.id}, ${embedding.content}, ${embedding.embedding})`
+        );
+    }
+    return "Resource successfully created and embedded.";
+    // } catch (e) {
+    //     if (e instanceof Error)
+    //         console.log(
+    //             e.message.length > 0 ? e.message : "Error, please try again."
+    //         );
+    // }
 }

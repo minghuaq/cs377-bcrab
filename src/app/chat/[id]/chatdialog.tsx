@@ -7,6 +7,7 @@ import ChatBubble from "./chatbubble";
 export default function ChatDialog(props: {
     chatData?: message[];
     conversation: Message[];
+    isLoading?: boolean;
 }) {
     const messagesEndRef = useRef<HTMLDivElement | null>(null);
     useEffect(() => {

@@ -1,4 +1,4 @@
-import { addMessage } from "@/app/utils/prismaCalls";
+import { addMessage } from "@/lib/actions/prismaCalls";
 import { PrismaClient } from "@prisma/client";
 import { NextRequest } from "next/server";
 

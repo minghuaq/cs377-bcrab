@@ -11,6 +11,7 @@ import { chatHistoryContext } from "@/app/chat/layout";
 type chatboxProps = {
     chatData?: message[];
     setConversation?: React.Dispatch<React.SetStateAction<Message[]>>;
+    setIsLoading?: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 export default function Chatbox(props: chatboxProps) {
@@ -40,6 +41,10 @@ export default function Chatbox(props: chatboxProps) {
                 return !createDialog;
             });
         },
+        onError: (error) => {
+            console.log(error);
+        },
+        maxSteps: 5,
     });
     useEffect(() => {
         if (localStorage.getItem("initMessage")) {
@@ -91,6 +96,9 @@ export default function Chatbox(props: chatboxProps) {
         );
         setInput("");
     }
+    useEffect(() => {
+        props.setIsLoading?.(isLoading);
+    }, [isLoading]);
     useEffect(() => {
         props.setConversation?.(messages);
     }, [messages]);

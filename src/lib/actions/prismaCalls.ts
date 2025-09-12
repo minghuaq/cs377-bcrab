@@ -76,6 +76,7 @@ export async function addResource(content: string) {
         },
     });
     const embeddings = await generateEmbeddings(content);
+    console.log(embeddings);
     for (const embedding of embeddings) {
         // const embeddingStr = `{${embedding.embedding.join(",")}}`;
         await prisma.$executeRaw(

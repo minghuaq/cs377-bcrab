@@ -1,78 +1,72 @@
-import { cosineSimilarity } from "ai";
 import { PrismaClient } from "@prisma/client";
+import { openai } from "@ai-sdk/openai";
+import { cosineSimilarity, embed, embedMany } from "ai";
 
 const prisma = new PrismaClient();
+const model = openai.embedding("text-embedding-3-large");
 
 const generateChunks = (input: string): string[] => {
-    return input
-        .trim()
-        .split(".")
-        .filter((i) => i !== "");
+    // For course information and structured data, we want to be more conservative about splitting
+    // Only split on clear sentence boundaries that are followed by a new sentence
+    const trimmed = input.trim();
+    
+    // If the content is relatively short (less than 500 characters), don't split it
+    if (trimmed.length < 500) {
+        return [trimmed];
+    }
+    
+    // For longer content, split on clear sentence boundaries
+    // Look for sentence-ending punctuation followed by whitespace and a capital letter
+    // But be more conservative - only split if there's significant whitespace or a newline
+    return trimmed
+        .replace(/([.?!])\s*\n\s*(?=[A-Z])/g, "$1|")  // Split on sentence end + newline + capital
+        .replace(/([.?!])\s{2,}(?=[A-Z])/g, "$1|")    // Split on sentence end + multiple spaces + capital
+        .split("|")
+        .filter((chunk) => chunk.trim() !== "")
+        .map((chunk) => chunk.trim());
 };
 
 export const generateEmbeddings = async (
     value: string
 ): Promise<Array<{ embedding: number[]; content: string }>> => {
+    console.log(value);
     const chunks = generateChunks(value);
+    console.log(chunks);
     try {
-        // const { embeddings } = await embedMany({
-        //     model: embeddingModel,
-        //     values: chunks,
-        // });
-        const embeddings: number[][] = [];
-        for (const chunk of chunks) {
-            const response = await fetch(
-                "https://api-inference.huggingface.co/models/llmrails/ember-v1",
-                {
-                    method: "POST",
-                    headers: {
-                        Authorization: `Bearer ${process.env.HUGGING_FACE_API_KEY}`,
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        inputs: chunk,
-                    }),
-                }
-            );
-            const result = await response.json();
-            embeddings.push(await result);
-        }
+        const { embeddings } = await embedMany({
+            model: openai.embedding("text-embedding-3-small"),
+            values: chunks,
+        });
         return embeddings.map((e, i) => ({ embedding: e, content: chunks[i] }));
     } catch (err) {
         console.log(err);
         return [{ embedding: [], content: "" }];
     }
 };
+
 export const generateEmbedding = async (value: string): Promise<number[]> => {
     const input = value.replaceAll("\\n", " ");
     // const { embedding } = await embed({
     //     model: embeddingModel,
     //     value: input,
     // });
-    const response = await fetch(
-        "https://api-inference.huggingface.co/models/llmrails/ember-v1",
-        {
-            method: "POST",
-            headers: {
-                Authorization: `Bearer ${process.env.HUGGING_FACE_API_KEY}`,
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                inputs: input,
-            }),
-        }
-    );
-    const result = await response.json();
-    return result;
+    const { embedding } = await embed({
+        model: openai.embedding("text-embedding-3-small"),
+        value: input,
+    });
+
+    return embedding;
 };
 
 export const findRelevantContent = async (userQuery: string) => {
-    const similarLimit = 4
+    console.log(userQuery);
+    const similarLimit = 100;
     const userQueryEmbedded = await generateEmbedding(userQuery);
+    console.log(userQueryEmbedded);
     const allEmbeddings: { content: string; embedding: string }[] =
         await prisma.$queryRaw`
-        SELECT e.content as content, e.embedding::text as embedding
-        FROM "Embeddings" e;
+            SELECT e.content as content, e.embedding::text as embedding
+            FROM "Embeddings" e;
         `;
     let embedding: number[] | null = null;
     let similarEmbeddings: { content: string; similarity: number }[] = [];
@@ -98,7 +92,9 @@ export const findRelevantContent = async (userQuery: string) => {
     const similarGuides = similarEmbeddings.map((similar) => {
         return similar.content;
     });
-    console.log("full similarity: ", similarGuides)
-    console.log(similarGuides.slice(0, Math.min(similarGuides.length, similarLimit)))
+    console.log("full similarity: ", similarGuides);
+    console.log(
+        similarGuides.slice(0, Math.min(similarGuides.length, similarLimit))
+    );
     return similarGuides.slice(0, Math.min(similarGuides.length, similarLimit));
 };

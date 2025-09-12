@@ -37,7 +37,166 @@ model Message {
   @@id([userId, dialogId, messageID]) // Composite primary key
 }
 
-// Is unique per person, generally based on email
+// Academic program types
+enum ProgramType {
+  MAJOR
+  MINOR
+}
+
+// Academic programs (majors, minors, etc.)
+model AcademicProgram {
+  id          String      @id @default(cuid())
+  type        ProgramType
+  name        String      // e.g., "Computer Science", "Mathematics"
+  // Relations
+  studentPrograms StudentProgram[]
+  
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+// Junction table for student-program relationships
+model StudentProgram {
+  id        String          @id @default(cuid())
+  studentId String
+  programId String
+  student   Student         @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  program   AcademicProgram @relation(fields: [programId], references: [id], onDelete: Cascade)
+  
+  // Program-specific details
+  status    String          @default("active") // "active", "completed", "dropped"
+  startDate DateTime        @default(now())
+  endDate   DateTime?
+  gpa       Float?          // GPA for this specific program
+  
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+  
+  @@unique([studentId, programId])
+}
+
+// Revised Student model
+model Student {
+  id            String    @id @default(cuid())
+  userId        String    @unique
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Student-specific fields
+  studentId     String    @unique // University student ID
+  year          Int?      // 1, 2, 3, 4 for undergraduate
+  overallGpa    Float?    // Overall GPA across all programs
+  graduationDate DateTime?
+  
+  // Relations
+  programs      StudentProgram[]  // Multiple majors/minors
+  enrollments   Enrollment[]
+  mediaConsumption MediaConsumption[]
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+// Course information
+model Course {
+  id          String  @id @default(cuid())
+  courseCode  String  @unique // e.g., "CS-377"
+  title       String
+  description String?
+  credits     Int
+  department  String?
+  level       String? // "undergraduate", "graduate", etc.
+
+  // Relations
+  enrollments Enrollment[]
+
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  MediaConsumption MediaConsumption[]
+}
+
+// Junction table for student-course relationships
+model Enrollment {
+  id        String  @id @default(cuid())
+  studentId String
+  courseId  String
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  course    Course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  // Enrollment details
+  semester String? // "Fall 2024", "Spring 2024"
+  year     Int?
+  grade    String? // "A", "B+", "C", etc.
+
+  enrolledAt  DateTime  @default(now())
+  completedAt DateTime?
+
+  @@unique([studentId, courseId, semester, year])
+}
+
+// Media types enum
+enum MediaType {
+  BOOK
+  MOVIE
+  MUSIC
+  PODCAST
+  ARTICLE
+  VIDEO
+  OTHER
+}
+
+// Media items
+model Media {
+  id          String    @id @default(cuid())
+  title       String
+  type        MediaType
+  author      String? // Author, director, artist, etc.
+  description String?
+  releaseDate DateTime?
+  genre       String?
+  duration    Int? // in minutes for movies/videos, pages for books
+  rating      Float? // Average rating (1-5 or 1-10)
+  isbn        String? // For books
+  imdbId      String? // For movies
+  spotifyId   String? // For music
+
+  // Relations
+  consumption MediaConsumption[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([title, author, type])
+}
+
+// Student media consumption tracking
+model MediaConsumption {
+  id        String  @id @default(cuid())
+  studentId String
+  mediaId   String
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  media     Media   @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+
+  // Consumption details
+  status   String  @default("planning") // "planning", "in_progress", "completed", "dropped"
+  rating   Int? // Student's personal rating (1-5)
+  review   String? // Student's review/notes
+  progress Float? // 0.0 to 1.0 (percentage completed)
+
+  // Dates
+  startedAt   DateTime?
+  completedAt DateTime?
+
+  // Context
+  relatedCourseId String? // If consumed as part of a course
+  relatedCourse   Course? @relation(fields: [relatedCourseId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([studentId, mediaId])
+}
+
+// Update your existing User model to include the student relation
 model User {
   id            String    @id @default(cuid())
   name          String?
@@ -45,8 +204,10 @@ model User {
   emailVerified DateTime?
   image         String?
   accounts      Account[]
-  // sessions      Session[]
   dialogs       Dialog[]
+
+  // Add student relation
+  student Student?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -61,11 +222,11 @@ model Resources {
 }
 
 model Embeddings {
-  id         String    @id @default(cuid())
+  id         String                       @id @default(cuid())
   resourceId String
-  resource   Resources @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  resource   Resources                    @relation(fields: [resourceId], references: [id], onDelete: Cascade)
   content    String
-  embedding  Unsupported("vector(1024)")?
+  embedding  Unsupported("vector(1536)")?
 }
 
 // There can be multiple accounts per user

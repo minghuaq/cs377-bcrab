@@ -6,12 +6,8 @@ import { NextRequest } from "next/server";
 import { z } from "zod";
 import { openai } from "@ai-sdk/openai";
 import { findRelevantContent } from "@/lib/ai/embedding";
-import { groq } from "@ai-sdk/groq";
 
 const prisma = new PrismaClient();
-const openrouter = createOpenRouter({
-    apiKey: process.env.API_KEY,
-});
 export const maxDuration = 30;
 // export const runtime = "edge";
 export async function POST(request: NextRequest) {
@@ -27,42 +23,58 @@ export async function POST(request: NextRequest) {
     const newMessage = messages[messages.length - 1];
     initMessage?.push(...messages);
 
-    const chatContextLength = 2;
+    const chatContextLength = 10;
     const messsagesToAI =
         initMessage.length <= chatContextLength
             ? initMessage
             : initMessage.slice(initMessage.length - chatContextLength);
+
     const completion = streamText({
-        model: groq(
-            `${process.env.MODEL || "meta-llama/llama-3.1-405b-instruct:free"}`
-        ),
-        system: `You are Beloit College Roadmap Advisor Bot (B-CRAB), a helpful assistant. Check your knowledge base before answering any questions Only respond to questions using information from tool calls. If no relevant information is found in the tool calls, respond, "Sorry, I don't know, I only answer question related to Beloit College."`,
+        model: openai(`${process.env.CHAT_MODEL}`),
+        system: `You are Beloit College Roadmap Advisor Bot (B-CRAB), a helpful assistant. 
+        You can help students with:
+        1. Adding their course history and academic information
+        2. Parsing program requirements from school websites  
+        3. Planning their degree completion
+        4. Finding courses and requirements
+        
+        Always use tool calls to get information before answering questions.`,
         messages: messsagesToAI,
 
         tools: {
             addResource: {
-                description: `add a resource to your knowledge base. If the user provides a random piece of knowledge unprompted, use this tool without asking for confirmation.`,
+                description: `Add resources to the knowledge base as canonical sentences ONLY. 
+                Trigger without confirmation when the user drops factual info unprompted.
+                One or more canonical sentences (newline-separated), each summarizing exactly one fact using the strict format above. If the content relates to eachother, add them in one sentence.`,
                 parameters: z.object({
-                    content: z
-                        .string()
-                        .describe(
-                            "the content or resource to add to the knowledge base"
-                        ),
+                    content: z.string().describe(
+                        `
+                        FORMAT (must include a leading type tag and fixed field order):
+                        [course] The user has studied <Title> (Code=<CourseCode>; Section=<Section>) at <Institution>.<optional " Meeting time: <Days> <Start–End>.">
+                        Examples:
+                        [course] The user has studied Data Privacy and Security (Code=CSCI 370; Section=01) at Beloit College. Meeting time: TR 2:00 PM–3:50.
+                        [course] The user has studied Voice (2A) (Code=MUSI 012; Section=03) at Beloit College.
+                        
+                        Rules:
+                        - Always include the leading type tag "[course]" for courses.
+                        - Always include Code and Section exactly as provided; if unknown, omit that key entirely (do not guess or write null).
+                        - Keep institution if explicitly present (e.g., Beloit College); otherwise omit.
+                        - Preserve user-provided times/days if present; otherwise omit the meeting-time clause.
+                        - Output ONLY the canonical sentences, one per line, no extra commentary.`
+                    ),
                 }),
                 execute: async ({ content }) => {
-                    await addResource(content);
-                    return "Resource Added";
+                    return await addResource(content);
                 },
             },
 
             getInformation: {
-                description: `get information from your knowledge base to answer questions. If the user asks for a random piece of knowledge unprompted, use this tool without asking for confirmation.`,
+                description:
+                    "Only trigger when the user asks a question. Generate a single rewritten query string and retrieve results. Only respond to questions using information from tool calls.",
                 parameters: z.object({
-                    question: z
-                        .string()
-                        .describe(
-                            "the users question to search for in the knowledge base"
-                        ),
+                    question: z.string().describe(`
+              Rewrite the user's request into ONE minimal query string targeting canonical sentences. All question should be related to Beloit College, hence Beloit College to your query. 
+              `),
                 }),
                 execute: async ({ question }) => {
                     return await findRelevantContent(question);
@@ -82,6 +94,7 @@ export async function POST(request: NextRequest) {
         async onFinish({ text, toolCalls, toolResults, usage, finishReason }) {
             let retrieve = await addMessage(text, dialogID, true);
         },
+        maxSteps: 5,
     });
     for await (const textPart of completion.textStream) {
         continue;
